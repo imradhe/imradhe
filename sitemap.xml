@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <url>
+    <loc>https://imradhe.netlify.app/</loc>
+    <priority>1</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  
+  <url>
+    <loc>https://imradhe.netlify.app/Lyrics/Imagine-Telugu</loc>
+    <priority>1</priority>
+    <changefreq>Weekly</changefreq>
+  </url>
+  
+  <url>
+    <loc>https://imradhe.netlify.app/Lyrics/ManadeKadaSneham</loc>
+    <priority>1</priority>
+    <changefreq>Weekly</changefreq>
+  </url>
+  
+  <url>
+    <loc>https://imradhe.netlify.app/Lyrics/Imagine-English</loc>
+    <priority>1</priority>
+    <changefreq>Weekly</changefreq>
+  </url>
+  
+</urlset>
