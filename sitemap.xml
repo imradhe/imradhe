@@ -12,20 +12,20 @@
   </url>
   
   <url>
-    <loc>https://imradhe.netlify.app/Lyrics/Imagine-Telugu</loc>
-    <priority>1</priority>
+    <loc>https://imradhe.netlify.app/Lyrics/imagine-telugu</loc>
+    <priority>0.9</priority>
     <changefreq>Weekly</changefreq>
   </url>
   
   <url>
-    <loc>https://imradhe.netlify.app/Lyrics/ManadeKadaSneham</loc>
-    <priority>1</priority>
+    <loc>https://imradhe.netlify.app/Lyrics/manadekadasneham</loc>
+    <priority>0.9</priority>
     <changefreq>Weekly</changefreq>
   </url>
   
   <url>
-    <loc>https://imradhe.netlify.app/Lyrics/Imagine-English</loc>
-    <priority>1</priority>
+    <loc>https://imradhe.netlify.app/Lyrics/imagine-english</loc>
+    <priority>0.9</priority>
     <changefreq>Weekly</changefreq>
   </url>
   
