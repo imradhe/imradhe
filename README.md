@@ -1,1 +1,1 @@
- [![GitHub Streak](https://streak-stats.demolab.com/?user=imradhe)](https://git.io/streak-stats)
+ [![GitHub Streak](https://streak-stats.demolab.com/?user=imradhe)](https://imradhe.com)
