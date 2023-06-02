@@ -6,6 +6,6 @@
 
   </p>
   
-![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=dark&border_radius=2.5&type=png&sideNums=EB5454&fire=EB5454)]
+![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=dark&border_radius=2.5&type=png&sideNums=EB5454&fire=EB5454)
 
  </div>
