@@ -20,7 +20,7 @@
 
 ## Namaste! 🙏🏻
 
->  Well Trained Product Developer with experience in building and managing applications, strong and efficient problem-solving and branding skills and deep thinking.
+> I'm Well Trained Product Developer with experience in building and managing applications, strong and efficient problem-solving and branding skills and deep thinking.
 >
 > Skilled in multiple programming languages and frameworks, and a passion for expanding my skillset and solving real-world problems.
 >
