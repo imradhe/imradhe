@@ -16,4 +16,20 @@
 
 ![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=dark&border_radius=2.5&type=png&sideNums=EB5454&fire=EB5454)
 
+
+## Namaste! 🙏🏻
+
+>  Well Trained Product Developer with experience in building and managing applications, strong and efficient problem-solving and branding skills and deep thinking.
+>
+> Skilled in multiple programming languages and frameworks, and a passion for expanding my skillset and solving real-world problems.
+>
+>I consider myself lucky to be unlucky to face failures which helped me to be who I am now. A self aware and confident Being Human.
+
+### Talking about Personal Stuffs:
+
+- 👨‍💻 Portfolio  [imradhe.com](https://imradhe.com)
+
+- 📝 [Resume](https://imradhe.com/assets/docs/myResume.pdf)
+
+- 💬 Ask me about anything [here](https://github.com/imradhe/imradhe/discussions/3) ! I am happy to help.
  </div>
