@@ -16,6 +16,7 @@
 
 ![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=dark&border_radius=2.5&type=png&sideNums=EB5454&fire=EB5454)
 
+</div>
 
 ## Namaste! 🙏🏻
 
@@ -32,4 +33,3 @@
 - 📝 [Resume](https://imradhe.com/assets/docs/myResume.pdf)
 
 - 💬 Ask me about anything [here](https://github.com/imradhe/imradhe/discussions/3) ! I am happy to help.
- </div>
