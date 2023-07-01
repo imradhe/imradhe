@@ -32,5 +32,4 @@
 
 - 📝 [Resume](https://imradhe.com/assets/docs/myResume.pdf)
 
-- 💬 Ask me about anything [here](mailto:contact@imradhe
-- com) ! I am happy to help.
+- 💬 Ask me about anything [here](mailto:contact@imradhe.com) ! I am happy to help.
