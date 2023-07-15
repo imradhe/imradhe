@@ -14,7 +14,7 @@
 [<img src="https://img.shields.io/badge/DEV.TO-%230A0A0A.svg?&style=for-the-badge&logo=dev-dot-to&logoColor=white" />](https://dev.to/imradhe)  
 ![counter](https://komarev.com/ghpvc/?username=imradhe&style=flat-square)
 
-![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=dark&border_radius=2.5&type=png&sideNums=EB5454&fire=EB5454)
+![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=dark&border_radius=2.5&type=png&sideNums=EB5454&fire=EB5454&exclude_days=Sun%2CSat)
 
 </div>
 
