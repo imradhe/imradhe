@@ -34,4 +34,4 @@
 
 - 📝 [Resume](https://imradhe.com/assets/docs/myResume.pdf)
 
-- 💬 Ask me about anything [here](https;//instagram.com/imraadhe) ! I am happy to help.
+- 💬 Ask me about anything [here](https://instagram.com/imraadhe)! I am happy to help.
