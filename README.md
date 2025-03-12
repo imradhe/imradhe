@@ -15,7 +15,7 @@
 
 [![counter](https://komarev.com/ghpvc/?username=imradhe&style=flat-square)](https://imradhe.com)
 
-[![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=prussian&hide_border=true&border_radius=8&mode=daily&exclude_days=Sat%2CASun)](https://imradhe.com)
+[![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=prussian&hide_border=true&border_radius=8&mode=weekly&exclude_days=Sat%2CASun)](https://imradhe.com)
 
 
 </div>
