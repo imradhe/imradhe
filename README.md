@@ -15,7 +15,12 @@
 
 [![counter](https://komarev.com/ghpvc/?username=imradhe&style=flat-square)](https://imradhe.com)
 
-[![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=prussian&hide_border=true&border_radius=8&mode=weekly&exclude_days=Sat%2CASun)](https://imradhe.com)
+GitHub Stats | Streak Stats
+:-------------------------:|:-------------------------:
+[![Hrishikesh's GitHub Stats](https://github-readme-stats.vercel.app/api?username=imradhe&count_private=true&show_icons=true&hide_title=true&hide_border=true)](https://github.com/imradhe/) | [![GitHub Streak](https://streak-stats.demolab.com?user=imradhe&theme=prussian&hide_border=true&border_radius=8&mode=weekly&exclude_days=Sat%2CASun)](https://imradhe.com)
+
+
+
 
 
 </div>
