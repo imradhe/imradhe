@@ -16,7 +16,7 @@
 
 GitHub Stats | Streak Stats
 :-------------------------:|:-------------------------:
-[![Radhe Shyam's GitHub Stats](https://github-readme-stats.vercel.app/api?username=imradhe&theme=prussian&count_private=true&show_icons=true&hide_title=true&hide_border=true)](https://github.com/imradhe/) | [![Radhe Shyam's GitHub Streak](https://streak-stats.demolab.com/?user=imradhe&theme=prussian&mode=weekly)](https://imradhe.com)
+[![Radhe Shyam's GitHub Stats](https://github-readme-stats.vercel.app/api?username=imradhe&theme=prussian&count_private=true&show_icons=true&hide_title=true&hide_border=true)](https://github.com/imradhe/) | [![Radhe Shyam's GitHub Streak](https://streak-stats.demolab.com/?user=imradhe&theme=prussian&hide_border=true&mode=weekly)](https://imradhe.com)
 
 
 
