@@ -2,7 +2,7 @@
   <h1 align="center"> I am </h1>
   
   <p align="center">
-      <img src="http://readme-typing-svg.demolab.com/?lines=Researcher%20(Speech%20Synthesis); Product%20Developer; Language%20Expert; Radhe%20Shyam%20Salopanthula &font=Fira%20Code&center=true&width=380&height=50&duration=4000&pause=1000" alt="Example Usage - README Typing SVG">
+      <img src="http://readme-typing-svg.demolab.com/?lines=PhD Scholar; Product%20Developer; Language%20Expert; Radhe%20Shyam%20Salopanthula &font=Fira%20Code&center=true&width=380&height=50&duration=4000&pause=1000" alt="Example Usage - README Typing SVG">
 
   </p>
   
@@ -26,9 +26,9 @@ GitHub Stats | Streak Stats
 
 ## Namaste! 🙏🏻
 
-> I am an enthusiastic Researcher and Product Developer working at the intersection of AI, Speech Synthesis, and Language Technology. Currently working at AI4Bharat, IITM, leading SwaraTTS, a pioneering project to build a sloka chanting TTS model for Sanskrit.
-> 
-> Skilled in building scalable tech products, initiating research problems, and applying creative solutions across diverse domains which are at the “intersection of what I want to, need to and can”.
+> Enthusiastic Researcher and Product Developer working at the intersection of AI, Speech, and Language Technology. Currently pursuing a PhD in Computational Linguistics at IIIT Hyderabad, exploring foundational and applied aspects of Indic language understanding and generation.
+>
+>Skilled in building scalable tech products, initiating research problems, and applying creative solutions across diverse domains which are at the “intersection of what I want to, need to and can”.
 
 ### Talking about Personal Stuffs:
 
