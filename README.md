@@ -2,7 +2,7 @@
   <h1 align="center"> I am </h1>
   
   <p align="center">
-      <img src="http://readme-typing-svg.demolab.com/?lines=PhD Scholar; Product%20Developer; Language%20Expert; Radhe%20Shyam%20Salopanthula &font=Fira%20Code&center=true&width=380&height=50&duration=4000&pause=1000" alt="Example Usage - README Typing SVG">
+      <img src="http://readme-typing-svg.demolab.com/?lines=PhD%20Scholar; Product%20Developer; Language%20Expert; Radhe%20Shyam%20Salopanthula &font=Fira%20Code&center=true&width=380&height=50&duration=4000&pause=1000" alt="Example Usage - README Typing SVG">
 
   </p>
   
