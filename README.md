@@ -26,7 +26,7 @@ GitHub Stats | Streak Stats
 
 ## Namaste! 🙏🏻
 
-> Enthusiastic Researcher and Product Developer working at the intersection of AI, Speech, and Language Technology. Currently pursuing a PhD in Computational Linguistics at IIIT Hyderabad, exploring foundational and applied aspects of Indic language understanding and generation.
+> Enthusiastic Researcher and Product Developer working at the intersection of AI, Speech, and Language Technology. Currently pursuing PhD in Computational Linguistics at IIIT Hyderabad, exploring foundational and applied aspects of Indic language understanding and generation.
 >
 >Skilled in building scalable tech products, initiating research problems, and applying creative solutions across diverse domains which are at the “intersection of what I want to, need to and can”.
 
