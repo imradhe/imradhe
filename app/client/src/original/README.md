@@ -1,0 +1,1 @@
+These templates and inline styles are transcribed from the PHP baseline on `main`. Keep their markup, class names, copy, spacing, and page-specific layouts unchanged. React supplies data and event handlers through OriginalMarkup. There is no shared site header, footer, or redesigned theme.

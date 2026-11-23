@@ -1,48 +1,52 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Streak, { practice } from './Streak';
-import Chess from './Chess';
+import { AuthForm } from './Auth';
+import { api } from '../api';
 import { srtTime, toSrt } from './Dhwani';
+vi.mock('../auth', () => ({ useAuth: () => ({ user: null, accept: vi.fn() }) }));
+vi.mock('../api', () => ({ api: vi.fn() }));
 const wrap = component => render(<MemoryRouter>{component}</MemoryRouter>);
 
-describe('streak tracking', () => {
-  it('records one daily practice, advances the next day, and resets a broken streak', () => {
-    const original = { days: 0, daily: 10, reward: 0, lastDate: '' };
-    const first = practice(original, true, new Date(2026, 10, 23));
-    expect(first.days).toBe(1); expect(first.reward).toBe(10);
-    expect(practice(first, true, new Date(2026, 10, 23))).toBe(first);
-    const next = practice(first, true, new Date(2026, 10, 24));
-    expect(next.days).toBe(2); expect(next.reward).toBe(20);
-    expect(practice(next, true, new Date(2026, 10, 26)).days).toBe(1);
+describe('original streak behavior', () => {
+  it('keeps the original third-day reward formula and 24-hour check-in interval', () => {
+    const original = { days: 1, daily: 10, reward: 0, lastClicked: 1000 };
+    expect(practice(original, true, 2000)).toBe(original);
+    const second = practice(original, true, 1000 + 86400000);
+    expect(second.days).toBe(2); expect(second.reward).toBe(0);
+    const third = practice(second, true, 1000 + 2 * 86400000);
+    expect(third.days).toBe(3); expect(third.reward).toBe(20);
   });
-  it('starts, completes, persists and resets a practice reward', () => {
+  it('uses the original setup controls, completion screen, and New Streak action', () => {
     wrap(<Streak/>);
-    fireEvent.change(screen.getByLabelText('Streak title'), { target: { value: 'Read daily' } });
-    fireEvent.change(screen.getByLabelText('Target reward (₹)'), { target: { value: '20' } });
-    fireEvent.change(screen.getByLabelText('Reward per practice (₹)'), { target: { value: '10' } });
-    fireEvent.click(screen.getByText('Start streak'));
-    fireEvent.click(screen.getByText('Practice for the day')); fireEvent.click(screen.getByText('Practice for the day'));
-    expect(screen.getByText(/Congratulations/)).toBeInTheDocument();
-    expect(JSON.parse(localStorage.getItem('imradhe:streak')).reward).toBe(20);
-    fireEvent.click(screen.getByText('Reset reward'));
-    expect(screen.getByText('Start streak')).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText('Enter your streak title'), { target: { value: 'Read daily' } });
+    fireEvent.change(screen.getByPlaceholderText('Enter target reward in ₹'), { target: { value: '20' } });
+    fireEvent.change(screen.getByPlaceholderText('Enter daily reward in ₹'), { target: { value: '10' } });
+    fireEvent.click(screen.getByText('Start Streak'));
+    fireEvent.click(screen.getByText('Practice for the day'));
+    expect(document.querySelector('#streak')).toHaveTextContent('2');
+    expect(document.querySelector('#reward')).toHaveTextContent('₹0');
+    fireEvent.click(screen.getByText('Practice for the day'));
+    expect(screen.getByText('Congrats! You reached your target')).toBeVisible();
+    expect(document.querySelector('#successReward')).toHaveTextContent('₹20');
+    fireEvent.click(screen.getByText('New Streak'));
+    expect(screen.getByText('Start Streak')).toBeVisible();
   });
 });
-describe('chess', () => {
-  it('allows legal moves, blocks illegal moves, persists and supports undo and reset', () => {
-    wrap(<Chess/>);
-    fireEvent.click(screen.getByRole('button', { name: 'e2 white p' }));
-    fireEvent.click(screen.getByRole('button', { name: 'e4 empty' }));
-    expect(screen.getByRole('button', { name: 'e4 white p' })).toBeInTheDocument();
-    expect(screen.getByText('Black to move.')).toBeInTheDocument();
-    expect(JSON.parse(localStorage.getItem('imradhe:chess'))).toContain('e4');
-    fireEvent.click(screen.getByRole('button', { name: 'e7 black p' }));
-    fireEvent.click(screen.getByRole('button', { name: 'e4 white p' }));
-    expect(screen.getByRole('button', { name: 'e7 black p' })).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Undo'));
-    expect(screen.getByRole('button', { name: 'e2 white p' })).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Reset')); expect(screen.getByText('White to move.')).toBeInTheDocument();
+describe('original account form', () => {
+  it('retains the phone field, password toggle, original labels and registration payload', async () => {
+    api.mockResolvedValue({ user: { role: 'user' }, csrf: 'token' });
+    wrap(<AuthForm register/>);
+    expect(screen.getByText('User Registration')).toBeInTheDocument();
+    const password = screen.getByPlaceholderText('Password');
+    fireEvent.click(screen.getByText('Show Password'));
+    expect(password).toHaveAttribute('type', 'text');
+    fireEvent.click(screen.getByText('Hide Password'));
+    expect(password).toHaveAttribute('type', 'password');
+    for (const [placeholder, value] of [['Name', 'Original User'], ['Email', 'original@example.test'], ['phone', '9876543210'], ['Password', 'Original-123!']]) fireEvent.change(screen.getByPlaceholderText(placeholder), { target: { value } });
+    fireEvent.click(screen.getByRole('button', { name: 'Register', exact: true }));
+    await waitFor(() => expect(api).toHaveBeenCalledWith('/auth/register', { method: 'POST', body: { name: 'Original User', email: 'original@example.test', phone: '9876543210', password: 'Original-123!' } }));
   });
 });
 describe('subtitle export', () => {

@@ -1,0 +1,26 @@
+
+      th{
+        text-transform: capitalize;
+      }
+      .action-btn{
+        margin-right: 5px;
+      }
+      label{
+        font-size: 16px;
+        font-weight: bold;
+      }
+      small kbd{
+        vertical-align: middle;
+        padding: 2px 6px;
+        user-select: none !important;
+        font-size: 16px;
+        font-weight: bold;
+        background: white;
+        color: black;
+        border: 1px solid black;
+      }
+      .table-responsive::-webkit-scrollbar {
+          height:12px !important;
+          cursor: pointer !important;
+      }
+    

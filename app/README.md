@@ -2,7 +2,7 @@
 
 A React application backed by an Express API and MongoDB. Node serves the production client, public files, and AR media on port 8080. PHP, Apache, and MySQL are no longer runtime dependencies.
 
-The portfolio content, photographs, resume, project images, chat archive, audio and 3D models are retained. The original application is preserved on branch `main`; this implementation is on `mern-rewrite`.
+The original UI, portfolio content, photographs, resume, project images, chat archive, audio and 3D models are retained. The React pages use the original markup and stylesheet versions; no shared site navigation, footer, redesign or extra controls are added. The original application is preserved on branch `main`; this implementation is on `mern-rewrite`.
 
 ## Run with Docker
 
@@ -40,7 +40,7 @@ Then open http://localhost:8080. Building does not require MongoDB. The portfoli
 
 ## Administrator account
 
-1. Register at `/register`, using a password of at least 12 characters. Public registration always creates an ordinary user.
+1. Register at `/register`, using a password meeting the original form’s validation (at least six characters, with letters, a number, a special character and uppercase letter). Public registration always creates an ordinary user.
 2. Promote the existing account from the application directory:
 
    ```sh
@@ -49,7 +49,7 @@ Then open http://localhost:8080. Building does not require MongoDB. The portfoli
    docker compose exec web npm run admin -- you@example.com
    ```
 
-3. Log in at `/login` and open `/admin`. You can create, edit, and delete stories, scenes, and Markdown blog posts, review flags, and inspect recent login records.
+3. Log in at `/login` and open `/admin`. The original dashboard, sidebar, story/scene tables, confirmation modals and rich-text forms are retained.
 
 Set `ALLOW_REGISTRATION=false` after creating the accounts you need. No default admin or password is included. The original export contains no user records; old MD5 hashes are intentionally not imported.
 
@@ -58,8 +58,8 @@ Sessions are stored in MongoDB with expiration and an HttpOnly, SameSite=Strict 
 ## Content
 
 - `data/portfolio.json`: education, experience, and all 15 project entries; changes take effect after server restart.
-- `/admin/posts`: author posts in Markdown, set descriptions and tags, and toggle draft visibility.
-- `content/blog/*.md`: optional import source for new posts. Run `npm run seed` to insert new slugs; edit existing posts through admin.
+- Blog posts are stored in MongoDB. The protected `/api/admin/posts` API accepts Markdown bodies, descriptions, tags and draft state. The public blog keeps its original UI.
+- `content/blog/*.md`: optional import source for new posts. Run `npm run seed` to insert new slugs; update existing posts through the protected posts API.
 - `/admin/stories` and `/admin/scenes`: manage story content. Scene IDs are generated as `<storyID>-<act>-<chapter>-<scene>`. Changing these numbers changes the scene URL.
 - Scene HTML and rendered blog HTML are sanitized. The browser renders portfolio and archive Markdown without raw HTML.
 - `public/assets/`: preserved media and public resources. `media/ar/` contains the large models and is served at `/assets/ar/` without copying them into the Vite bundle.
@@ -77,7 +77,7 @@ Sessions are stored in MongoDB with expiration and an HttpOnly, SameSite=Strict 
 | `ASR_URL` | Optional AI4Bharat-compatible ASR HTTP inference endpoint |
 | `ASR_TOKEN` | Optional bearer token, sent only to that configured endpoint |
 
-The speech-to-text page sends WAV/MP3 audio through `/api/transcribe`. It validates language, size and format, detects the audio’s sample rate, and forwards audio only when submitted. With no configured service it returns an explicit 503 instead of pretending transcription worked. The speech-synthesis demo at `/balloon` uses the browser’s voices and no embedded bearer credential.
+The speech-to-text page sends WAV/MP3 audio through `/api/transcribe`. It validates language, size and format, detects the audio’s sample rate, and forwards audio only when submitted. With no configured service it returns an explicit 503 instead of pretending transcription worked. The `/balloon` scratchpad retains its original blank visible page; no embedded bearer credential is shipped.
 
 AR model viewing works on desktop; native AR needs a compatible phone and HTTPS. The isolated marker-video demo loads A-Frame and AR.js from their pinned upstream versions and requires camera permission. Camera/native AR and the external ASR provider need testing on their target devices/services.
 
@@ -95,6 +95,6 @@ A production deployment needs both the Node container and a persistent MongoDB s
 npm run check  # production build, API/content tests against temporary MongoDB, React interaction tests
 ```
 
-The integration suite starts and stops its own isolated MongoDB process; it never connects to `MONGODB_URI` or a real user database. The first test run may download the MongoDB test binary to `/tmp/imradhe-mongodb-binaries`. Tests cover content migration, role/CSRF enforcement, sessions, CRUD, drafts, HTML sanitization, flag ownership/aggregates, HTTP status and redirect behavior, static-file isolation, outage handling, chess moves, streak rewards, and subtitle timestamps.
+The integration suite starts and stops its own isolated MongoDB process; it never connects to `MONGODB_URI` or a real user database. The first test run may download the MongoDB test binary to `/tmp/imradhe-mongodb-binaries`. Tests cover content migration, role/CSRF enforcement, sessions, CRUD, drafts, HTML sanitization, flag ownership/aggregates, HTTP status and redirect behavior, static-file isolation, outage handling, original account-form behavior, streak rewards, and subtitle timestamps. Browser comparisons also verify the original chess widget and legal dragging.
 
 See [`../docs/MIGRATION.md`](../docs/MIGRATION.md) for all legacy routes and compatibility changes.

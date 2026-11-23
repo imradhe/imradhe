@@ -1,0 +1,41 @@
+
+.timeline {
+  position: relative;
+  border-left: 2px solid #333;
+  padding-left: 10px;
+}
+
+.timeline-item {
+  position: relative;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -21px;
+  top: 6px;
+  width: 20px;
+  height: 20px;
+  background-color: #000;
+  border-radius: 50%;
+  border: 4px solid white;
+  z-index: 2;
+}
+/* Force bold rendering */
+strong {
+  font-weight: 900 !important;
+}
+
+.fw-bold {
+  font-weight: 900 !important;
+}
+
+/* Ensure blockquote text isn’t inheriting a lighter weight */
+blockquote,
+blockquote * {
+  font-weight: inherit;
+}
+
+/* If a custom font is being used, make sure bold variant is applied */
+body {
+  font-synthesis: weight;
+}

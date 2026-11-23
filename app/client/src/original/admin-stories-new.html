@@ -1,0 +1,74 @@
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+          <h1 class="h2">New Story </h1>
+        </div>
+  
+  <form method="POST" class="container">
+      
+            
+            
+        <div class="row">    
+        
+            <div class="col-sm-4 mb-3">
+                <label for="title" class="form-label">Title</label> 
+                <input type="title" class="form-control" id="title" name="title" value="" required>
+                <strong id="titleMsg" class="text-danger"></strong>
+            </div> 
+            
+            <div class="col-sm-4 mb-3">
+                <label for="storyID" class="form-label">Story ID</label> 
+                <input type="storyID" class="form-control" id="storyID" name="storyID" value="" required>
+                <strong id="storyIDMsg" class="text-danger"></strong>
+            </div> 
+            
+            <div class="col-sm-4 mb-3">
+                <label for="author" class="form-label">Author</label> 
+                <input type="author" class="form-control" id="author" name="author" value="" required>
+                <strong id="authorMsg" class="text-danger"></strong>
+            </div> 
+            
+            <div class="col-sm-4 mb-3">
+                <label for="genre" class="form-label">Genre</label> 
+                <select class="form-control" id="genre" name="genre" required>
+                  <option value="Choose Genre" selected disabled hidden>Choose Genre</option>
+                  
+                  <option value="" ></option>
+                  
+                </select>
+                <strong id="roleMsg" class="text-danger"></strong>
+            </div> 
+            
+            <div class="col-sm-4 mb-3">
+                <label for="cover" class="form-label">Cover Image</label> 
+                <input type="cover" class="form-control" id="cover" name="cover" value="" required>
+                <strong id="coverMsg" class="text-danger"></strong>
+            </div> 
+            
+            <div class="col-sm-4 mb-3">
+                <label for="description" class="form-label">Description</label> 
+                <input type="description" class="form-control" id="description" name="description" value="" required>
+                <strong id="descriptionMsg" class="text-danger"></strong>
+            </div> 
+            
+            <div class="col-sm-4 mb-3">
+                <label for="tags" class="form-label">Tags</label> 
+                <input type="tags" class="form-control" id="tags" name="tags" value="" required>
+                <strong id="tagsMsg" class="text-danger"></strong>
+            </div> 
+
+
+            
+            <div class="col-sm-12 my-5">
+                <a href="/admin/stories" name="back" class="btn btn-secondary">Back</a> 
+                
+                <button type="submit" name="btn-submit" id="btn-submit" class="btn btn-primary"> Add </button>
+            </div>
+        </div>
+
+        </form>           
+      
+                
+  
+  
+  
+    </main>

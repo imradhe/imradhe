@@ -1,46 +1,77 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { marked } from 'marked';
 import { api } from '../api';
 import { useResource } from '../hooks';
-import { Listen, Markdown, Resource, PageTitle } from '../components/Common';
-const languages = { hi: 'Hindi', sa: 'Sanskrit', bn: 'Bangla', gu: 'Gujarati', kn: 'Kannada', ml: 'Malayalam', mr: 'Marathi', or: 'Odia', pa: 'Punjabi', ta: 'Tamil', te: 'Telugu', ur: 'Urdu' };
+import OriginalMarkup, { escapeHtml } from '../original/OriginalMarkup';
+import useOriginalPage, { loadScript } from '../original/useOriginalPage';
+import speechTemplate from '../original/speech.html?raw';
+import speechCss from '../original/styles/speech.css?raw';
+import chatTemplate from '../original/chat.html?raw';
+import chatCss from '../original/styles/chat.css?raw';
+import thoughtIcon from '../original/chat-thought-icon.html?raw';
+import markerTemplate from '../original/marker.html?raw';
 export function SpeechToText() {
-  const [file, setFile] = useState(null); const [language, setLanguage] = useState('hi'); const [busy, setBusy] = useState(false); const [transcript, setTranscript] = useState(''); const [error, setError] = useState(''); const [url, setUrl] = useState('');
-  useEffect(() => { if (!file) return; const objectUrl = URL.createObjectURL(file); setUrl(objectUrl); return () => URL.revokeObjectURL(objectUrl); }, [file]);
+  const [transcript, setTranscript] = useState(''); const [url, setUrl] = useState(''); const [busy, setBusy] = useState(false);
+  useOriginalPage({ styles: [], css: speechCss, bodyClass: '', title: 'Speech to Text' });
+  useEffect(() => () => { if (url) URL.revokeObjectURL(url); }, [url]);
   async function submit(event) {
-    event.preventDefault(); if (!file) return; setError(''); setBusy(true);
-    let context;
+    event.preventDefault(); const form = event.currentTarget; const file = form.elements.audio.files[0];
+    if (!file) { window.alert('Please select an audio file.'); return; }
+    let context; setBusy(true);
     try {
       if (file.size > 10 * 1024 * 1024) throw new Error('Choose an audio file smaller than 10 MB.');
-      const format = file.name.toLowerCase().endsWith('.wav') ? 'wav' : file.name.toLowerCase().endsWith('.mp3') ? 'mp3' : '';
-      if (!format) throw new Error('Choose a WAV or MP3 file.');
       const dataUrl = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); });
-      context = new AudioContext();
+      setUrl(URL.createObjectURL(file)); context = new AudioContext();
       const decoded = await context.decodeAudioData(await file.arrayBuffer());
-      const result = await api('/transcribe', { method: 'POST', body: { language, audioContent: dataUrl.split(',')[1], audioFormat: format, samplingRate: decoded.sampleRate } });
-      setTranscript(result.transcript);
-    } catch (e) { setError(e.message || 'Unable to read this audio.'); } finally { await context?.close(); setBusy(false); }
+      const result = await api('/transcribe', { method: 'POST', body: { language: form.elements.language.value, audioContent: dataUrl.split(',')[1], audioFormat: file.name.toLowerCase().endsWith('.mp3') ? 'mp3' : 'wav', samplingRate: decoded.sampleRate } });
+      const words = result.transcript.split(' '); const lines = []; for (let i = 0; i < words.length; i += 8) lines.push(words.slice(i, i + 8).join(' ')); setTranscript(lines.join('\n') + '\n');
+    } catch (error) { console.error(error.message); setTranscript(error.message); }
+    finally { await context?.close(); setBusy(false); }
   }
-  return <><PageTitle title="Speech to text"/><h1>Speech to text</h1><p className="lead">Transcribe WAV or MP3 audio in an Indian language.</p><form className="card editor" onSubmit={submit}><label>Language<select value={language} onChange={e => setLanguage(e.target.value)}>{Object.entries(languages).map(([id, name]) => <option value={id} key={id}>{name}</option>)}</select></label><label>Audio file<input type="file" accept=".wav,.mp3,audio/wav,audio/mpeg" required onChange={e => { setFile(e.target.files[0]); setTranscript(''); }}/></label>{url && <audio controls src={url}/>}<p className="muted">Submitting sends this audio to the configured speech recognition service.</p><button disabled={busy || !file}>{busy ? 'Transcribing…' : 'Convert to text'}</button>{error && <p className="error" role="alert">{error}</p>}</form>{transcript && <section><h2>Transcript</h2><pre className="transcript">{transcript}</pre></section>}</>;
+  return <OriginalMarkup html={speechTemplate} replace={(node, render) => {
+    const { id } = node.attribs;
+    if (id === 'speechToTextForm') return render(undefined, { onSubmit: submit });
+    if (node.attribs.type === 'submit') return <input type="submit" value="Convert to Text" disabled={busy}/>;
+    if (id === 'audioPlayerContainer') return render(undefined, { style: { display: url ? 'block' : 'none' } });
+    if (id === 'audioPlayer') return <audio controls id="audioPlayer" src={url || undefined}/>;
+    if (id === 'transcript') return render(transcript);
+  }}/>;
 }
 export function SpeechDemo() {
-  const [text, setText] = useState('Hello! Welcome to imradhe.com.');
-  return <><PageTitle title="Speech synthesis"/><h1>Speech synthesis</h1><p>Try text to speech with the voices available on your device.</p><label>Text<textarea value={text} onChange={e => setText(e.target.value)} maxLength={10000}/></label><Listen html={text.replaceAll('&', '&amp;').replaceAll('<', '&lt;')}/></>;
+  useOriginalPage({ styles: [], bodyClass: '', title: '' });
+  // The original /balloon route was a WebSocket scratchpad with no visible UI.
+  return null;
 }
 export function Call() {
   const [params] = useSearchParams(); const phone = (params.get('phone') || '').replace(/[^0-9+]/g, '');
-  const [number, setNumber] = useState(phone);
-  return <div className="auth card"><PageTitle title="Call"/><h1>Call</h1><label>Phone number<input type="tel" value={number} onChange={e => setNumber(e.target.value)} /></label>{/^\+?\d{3,15}$/.test(number) ? <a className="button" href={`tel:${number}`}>Call {number}</a> : <p>Enter a valid phone number.</p>}</div>;
+  useOriginalPage({ styles: [], bodyClass: '', title: '' });
+  useEffect(() => { if (phone) window.location.href = `tel:${phone}`; }, [phone]);
+  return phone ? null : <>No phone number provided.</>;
 }
 export function ArchivedChat() {
-  const resource = useResource('/chats'); const [selected, setSelected] = useState(0);
-  return <><PageTitle title="Deepseek or deepfake?"/><h1>Deepseek or deepfake?</h1><p className="muted">Archived conversations from February 2025.</p><Resource resource={resource}>{data => <div className="chat-layout"><nav aria-label="Conversations">{data.chats.map((chat, i) => <button className={selected === i ? '' : 'secondary'} key={i} onClick={() => setSelected(i)}>{chat.title}</button>)}</nav><div>{data.chats[selected]?.messages.map((message, i) => {
-    const thought = message.message.match(/<thinking>([\s\S]*?)<\/thinking>/); const body = message.message.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
-    return <article className={`card message ${message.entity === 'User' ? 'user-message' : ''}`} key={i}><strong>{message.entity}</strong>{thought && <details><summary>Show reasoning</summary><Markdown>{thought[1]}</Markdown></details>}<Markdown>{body}</Markdown><button className="secondary" onClick={async e => { const button = e.currentTarget; try { await navigator.clipboard.writeText(body); button.textContent = 'Copied'; } catch { button.textContent = 'Copy unavailable'; } }}>Copy</button></article>;
-  })}</div></div>}</Resource></>;
+  const resource = useResource('/chats'); const [sidebarOpen, setSidebarOpen] = useState(false);
+  const thoughtTimes = useMemo(() => resource.data?.chats[0]?.messages.map(() => Math.floor(Math.random() * 30) + 5) || [], [resource.data]);
+  useOriginalPage({ styles: ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css', 'https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css'], css: chatCss, bodyClass: '', title: "Deepseek or deepfake? China's Yet Another case of Copy to Cope" });
+  useEffect(() => { loadScript('/assets/bootstrap/js/bootstrap.bundle.min.js').catch(() => {}); }, []);
+  const chat = resource.data?.chats[0];
+  return <OriginalMarkup html={chatTemplate} replace={(node, render) => {
+    const attrs = node.attribs;
+    if (attrs.class?.includes('sidebar-toggle')) return render(undefined, { onClick: () => setSidebarOpen(!sidebarOpen) });
+    if (attrs.id === 'sidebar') return render(undefined, { className: attrs.class + (sidebarOpen ? ' open' : '') });
+    if (attrs.id === 'chat-title') return render(chat?.title || '');
+    if (attrs.id === 'chat-content') return render(chat?.messages.map((msg, index) => {
+      const thought = msg.message.match(/<thinking>([\s\S]*?)<\/thinking>/); const isUser = msg.entity === 'User';
+      const html = `<div class='chat-message my-3 ${isUser ? 'user-message' : 'bg-dark'}'><strong class='message-entity'>${escapeHtml(msg.entity)}</strong>${thought ? `<div><button class="btn btn-secondary btn-sm my-2 toggle-thought collapse show d-flex justify-content-center align-items-center" data-bs-toggle="collapse" data-bs-target="#thought${index}">${thoughtIcon} Thought for ${thoughtTimes[index]} seconds <i class="ms-2 bi bi-chevron-down"></i></button></div><div class='collapse show' id='thought${index}'><blockquote class='bg-dark border-start px-2 mt-2'>${marked.parse(thought[1])}</blockquote></div>` : ''}<p>${marked.parse(msg.message.replace(/<thinking>[\s\S]*?<\/thinking>/, ''))}</p></div>${!isUser ? '<div class="message-actions"><button class="btn btn-dark btn-sm"><i class="bi bi-clipboard"></i></button> <button class="btn btn-dark btn-sm"><i class="bi bi-arrow-repeat"></i></button> <button class="btn btn-dark btn-sm"><i class="bi bi-hand-thumbs-up"></i></button> <button class="btn btn-dark btn-sm"><i class="bi bi-hand-thumbs-down"></i></button></div>' : ''}`;
+      return <OriginalMarkup key={index} html={html}/>;
+    }));
+  }}/>;
 }
 export function MarkerDemo() {
-  const [enabled, setEnabled] = useState(false);
-  const frame = useRef(null);
-  return <><PageTitle title="Marker AR video"/><h1>Marker AR video</h1><p>Allow camera access, then point it at a Hiro marker to see the video. Camera AR needs HTTPS or localhost.</p><button onClick={() => setEnabled(v => !v)}>{enabled ? 'Stop camera' : 'Start camera'}</button>{enabled && <iframe ref={frame} className="marker-frame" src="/experiments/marker.html" title="Marker AR camera" allow="camera; autoplay; fullscreen"/>}</>;
+  useOriginalPage({ styles: [], bodyClass: '', bodyStyle: 'margin: 0; overflow: hidden;', title: 'AR Video on Image Target' });
+  useEffect(() => {
+    loadScript('https://aframe.io/releases/1.2.0/aframe.min.js').then(() => loadScript('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js')).catch(() => {});
+    return () => { document.querySelectorAll('video').forEach(video => video.srcObject?.getTracks?.().forEach(track => track.stop())); };
+  }, []);
+  return <OriginalMarkup html={markerTemplate}/>;
 }

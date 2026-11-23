@@ -21,8 +21,6 @@ export function parsePost(slug, source) {
 export async function seedContent() {
   const data = JSON.parse(await readFile(`${root}/data/legacy-content.json`, 'utf8'));
   for (const story of data.stories) {
-    if (story.cover === 'null' || !/^(https?:\/\/|\/?assets\/)/.test(story.cover || '')) story.cover = '';
-    if (story.cover && !/^(https?:\/\/|\/)/.test(story.cover)) story.cover = `/${story.cover}`;
     await Story.updateOne({ storyID: story.storyID }, { $setOnInsert: story }, { upsert: true, runValidators: true, timestamps: false });
   }
   for (const scene of data.scenes) {

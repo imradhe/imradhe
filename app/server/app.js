@@ -15,7 +15,7 @@ import { cleanHtml, postJson, portfolio, legacyRoutes, staticPages, validSlug } 
 const pick = (body, fields) => Object.fromEntries(fields.filter(k => body[k] !== undefined).map(k => [k, body[k]]));
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const envelope = data => ({ data, message: 'Successful', status: 200 });
-const safeUrl = value => typeof value === 'string' && (!value || /^\/(?!\/)/.test(value) || /^https?:\/\//.test(value));
+const safeUrl = value => typeof value === 'string' && (!value || /^\/(?!\/)/.test(value) || /^https?:\/\//.test(value) || /^[a-z0-9][a-z0-9 /._-]*$/i.test(value));
 const roleNames = ['annotator', 'reviewer', 'superchecker'];
 const published = { draft: false };
 
@@ -25,9 +25,9 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
   if (settings.trustProxy) app.set('trust proxy', settings.trustProxy);
   app.use(helmet({
     contentSecurityPolicy: { directives: {
-      defaultSrc: ["'self'"], scriptSrc: ["'self'", 'https://aframe.io', 'https://raw.githack.com', "'wasm-unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"], imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-      mediaSrc: ["'self'", 'blob:', 'https:'], connectSrc: ["'self'", 'blob:', 'https://cdn.aframe.io'],
+      defaultSrc: ["'self'"], scriptSrc: ["'self'", 'https://smruthi.in', 'https://cdn.ckeditor.com', 'https://stackpath.bootstrapcdn.com', 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com', 'https://cdn.datatables.net', 'https://unpkg.com', 'https://aframe.io', 'https://raw.githack.com', "'wasm-unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://stackpath.bootstrapcdn.com', 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com', 'https://cdn.datatables.net', 'https://unpkg.com'], fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'], imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+      mediaSrc: ["'self'", 'blob:', 'https:'], connectSrc: ["'self'", 'blob:', 'https://cdn.aframe.io', 'https://docs.google.com'],
       workerSrc: ["'self'", 'blob:'], frameSrc: ["'self'"], objectSrc: ["'none'"],
       upgradeInsecureRequests: settings.production ? [] : null
     } }, crossOriginEmbedderPolicy: false
@@ -90,9 +90,9 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
   app.post(['/api/auth/login', '/api/login'], authLimit, login);
   app.post('/api/auth/register', authLimit, async (req, res) => {
     if (!settings.registration) return res.status(403).json({ message: 'Registration is closed.' });
-    const { name, email, password } = req.body;
-    if (typeof name !== 'string' || name.trim().length < 2 || name.length > 100 || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || typeof password !== 'string' || password.length < 12 || password.length > 256) return res.status(400).json({ message: 'Enter a name, valid email, and a password of 12–256 characters.' });
-    const user = await User.create({ name: name.trim(), email: email.trim().toLowerCase(), password: await hashPassword(password), role: 'user' });
+    const { name, email, password, phone } = req.body;
+    if (typeof name !== 'string' || name.trim().length < 2 || name.length > 100 || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || typeof password !== 'string' || password.length < 6 || password.length > 256) return res.status(400).json({ message: 'Enter a name, valid email, and a password of 6–256 characters.' });
+    const user = await User.create({ name: name.trim(), email: email.trim().toLowerCase(), password: await hashPassword(password), phone: typeof phone === 'string' ? phone : '', role: 'user' });
     res.status(201).json(await startSession(req, res, user));
   });
   app.get('/api/auth/me', requireUser, (req, res) => res.json({ user: publicUser(req.user), csrf: req.session.csrf }));
@@ -196,10 +196,9 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
     if (req.path.length > 1 && req.path.endsWith('/')) return res.redirect(302, req.path.replace(/\/+$/, '') + req.url.slice(req.path.length));
     next();
   });
-  app.get('/testmail', (_req, res) => res.status(410).type('text').send('The legacy mail test route was missing and is retired.'));
   // Serve only explicit public directories, never the project root, SQL, config or source.
   app.use('/assets/ar', express.static(settings.mediaDir, { maxAge: '1d', dotfiles: 'deny' }));
-  app.use('/experiments', helmet.contentSecurityPolicy({ directives: { defaultSrc: ["'self'", 'https:', 'blob:', 'data:'], scriptSrc: ["'self'", 'https://aframe.io', 'https://raw.githack.com', "'unsafe-eval'"], styleSrc: ["'self'", "'unsafe-inline'"], objectSrc: ["'none'"], upgradeInsecureRequests: settings.production ? [] : null } }));
+  app.use(['/experiments', '/test'], helmet.contentSecurityPolicy({ directives: { defaultSrc: ["'self'", 'https:', 'blob:', 'data:'], scriptSrc: ["'self'", 'https://smruthi.in', 'https://cdn.ckeditor.com', 'https://stackpath.bootstrapcdn.com', 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com', 'https://cdn.datatables.net', 'https://unpkg.com', 'https://aframe.io', 'https://raw.githack.com', "'unsafe-eval'"], styleSrc: ["'self'", "'unsafe-inline'"], objectSrc: ["'none'"], upgradeInsecureRequests: settings.production ? [] : null } }));
   app.use(express.static(settings.publicDir, { index: false, dotfiles: 'deny' }));
   app.use(express.static(settings.distDir, { index: false, dotfiles: 'deny' }));
   app.get('/sitemap.xml', async (_req, res) => {
@@ -212,8 +211,8 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
   app.get('/{*path}', async (req, res) => {
     let title = 'Radhe Shyam Salopanthula';
     let description = 'PhD researcher in Computational Linguistics at IIIT Hyderabad. Speech, language technology, and research-driven products.';
-    let found = staticPages.includes(req.path) || /^\/admin\/(stories|scenes|posts)\/(edit|delete)\/[a-z0-9-]+$/.test(req.path);
-    const match = req.path.match(/^\/(blog|scene|stories)\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
+    let found = staticPages.includes(req.path) || /^\/admin\/(stories|scenes)\/(edit|delete)\/[a-z0-9-]+$/.test(req.path);
+    const match = req.path.match(/^\/(blog|scene)\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
     if (match) {
       if (!databaseReady()) return res.status(503).type('text').send('Database unavailable. Please try again shortly.');
       const [Model, field] = match[1] === 'blog' ? [Post, 'slug'] : match[1] === 'scene' ? [Scene, 'sceneID'] : [Story, 'storyID'];

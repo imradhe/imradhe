@@ -14,7 +14,7 @@ export const useAuth = () => useContext(AuthContext);
 export function AdminOnly({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  if (loading) return <p role="status">Checking access…</p>;
+  if (loading) return null;
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
   if (user.role !== 'admin') return <div className="notice" role="alert">Administrator access required. Ask the site owner to enable your account.</div>;
   return children;

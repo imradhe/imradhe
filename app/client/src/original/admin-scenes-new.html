@@ -1,0 +1,66 @@
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+          <h1 class="h2">New Scene </h1>
+        </div>
+  
+  <form method="POST" class="container">
+      
+            
+            
+        <div class="row">    
+        
+            <div class="col-sm-4 mb-3">
+                <label for="title" class="form-label">Title</label> 
+                <input type="title" class="form-control" id="title" name="title" value="" required>
+                <strong id="titleMsg" class="text-danger"></strong>
+            </div> 
+            
+            <div class="col-sm-4 mb-3">
+                <label for="storyID" class="form-label">Story</label> 
+                <select class="form-control" id="storyID" name="storyID" required>
+                  <option value="Choose Story" selected disabled hidden>Choose Story</option>
+                  
+                  <option value="" >{{title}}</option>
+                  
+                </select>
+                <strong id="roleMsg" class="text-danger"></strong>
+            </div> 
+            <div class="col-sm-4 mb-3"></div>
+            <div class="col-sm-4 mb-3">
+                <label for="actNumber" class="form-label">Act Number</label> 
+                <input type="actNumber" class="form-control" id="actNumber" name="actNumber" value="" required>
+                <strong id="actNumberMsg" class="text-danger"></strong>
+            </div> 
+
+            <div class="col-sm-4 mb-3">
+                <label for="chapterNumber" class="form-label">Chapter Number</label> 
+                <input type="chapterNumber" class="form-control" id="chapterNumber" name="chapterNumber" value="" required>
+                <strong id="chapterNumberMsg" class="text-danger"></strong>
+            </div>  
+            
+            <div class="col-sm-4 mb-3">
+                <label for="sceneNumber" class="form-label">Scene Number</label> 
+                <input type="sceneNumber" class="form-control" id="sceneNumber" name="sceneNumber" value="" required>
+                <strong id="sceneNumberMsg" class="text-danger"></strong>
+            </div> 
+            
+            
+            <div class="col-sm-12 mb-3">
+                <textarea name="content" id="content"></textarea>
+                
+            </div>
+            
+            <div class="col-sm-12 my-5">
+                <a href="/admin/scenes" name="back" class="btn btn-secondary">Back</a> 
+                
+                <button type="submit" name="btn-submit" id="btn-submit" class="btn btn-primary"> Add </button>
+            </div>
+        </div>
+
+        </form>           
+      
+         
+  
+  
+  
+    </main>

@@ -26,7 +26,7 @@ export const Post = mongoose.model('Post', new Schema({
   draft: { type: Boolean, default: false }, body: text(1000000)
 }, dates));
 export const User = mongoose.model('User', new Schema({
-  name: text(100), email: { ...text(254), lowercase: true, unique: true },
+  name: text(100), phone: { type: String, maxlength: 30, default: '' }, email: { ...text(254), lowercase: true, unique: true },
   password: { ...text(512), select: false }, role: { type: String, enum: ['user', 'admin'], default: 'user' }
 }, dates));
 export const Session = mongoose.model('Session', new Schema({

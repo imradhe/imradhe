@@ -1,0 +1,90 @@
+
+        /* Dark theme */
+        body {
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+
+        /* Layout Fixes */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* Hide sidebar on mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                height: 100vh;
+                z-index: 1050;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+        }
+
+        /* Sidebar toggle button */
+        .sidebar-toggle {
+            position: fixed;
+            top: 5px;
+            left: 5px;
+            z-index: 1100;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #181818;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        /* Chat Message Formatting */
+        .chat-message {
+            background: #2e2e2e;
+            padding: 2px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background: #3a3a3a;
+            align-self: flex-end;
+        }
+
+        /* Ensuring messages take proper width on mobile */
+        @media (max-width: 768px) {
+            .chat-message {
+                max-width: 90% !important;
+            }
+        }
+
+        /* Smooth Chat Scroll */
+        #chat-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+    

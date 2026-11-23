@@ -45,6 +45,8 @@ test('seed preserves all dates, scenes and content and never overwrites an edite
   await Story.updateOne({ storyID: 'short-stories' }, { title: 'Edited short stories' });
   await seedContent();
   assert.equal((await Story.findOne({ storyID: 'short-stories' })).title, 'Edited short stories');
+  await admin.put('/api/admin/stories/short-stories').set('x-csrf-token', adminCsrf).send({ cover: 'null' }).expect(200);
+  await admin.put('/api/admin/stories/streaktracker').set('x-csrf-token', adminCsrf).send({ cover: 'aidfhoj 9j' }).expect(200);
 });
 test('public reading routes return ordered scenes and distinguish missing records', async () => {
   const story = (await request(app).get('/api/stories/short-stories').expect(200)).body;
@@ -141,9 +143,9 @@ test('page routes, assets, redirects, sitemap and missing pages keep correct HTT
   assert.equal((await request(app).get('/blog/?page=2').expect(302)).headers.location, '/blog?page=2');
   assert.equal((await request(app).get('/adcast').expect(302)).headers.location, 'https://adcast.imradhe.com/adcast');
   assert.match((await request(app).get('/sitemap.xml').expect(200)).text, /scene\/short-stories-1-1-1/);
-  for (const route of ['/missing', '/config.php', '/.env', '/server/app.js', '/data/legacy-content.json', '/blog/_example', '/ar/missing']) await request(app).get(route).expect(404);
+  for (const route of ['/missing', '/config.php', '/.env', '/server/app.js', '/data/legacy-content.json', '/blog/_example', '/ar/missing', '/stories', '/admin/stories/view', '/admin/scenes/view']) await request(app).get(route).expect(404);
   await request(app).get('/api/missing').expect(404);
-  await request(app).get('/testmail').expect(410);
+  await request(app).get('/testmail').expect(404);
 });
 test('unconfigured transcription returns a useful error without forwarding audio', async () => {
   await request(app).post('/api/transcribe').send({}).expect(503);

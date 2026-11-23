@@ -1,0 +1,38 @@
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+          <h1 class="h2">Edit Scene - {{title}}</h1>
+        </div>
+  
+  <form method="POST" class="container">
+      
+            
+            
+        <div class="row">    
+        
+            <div class="col-sm-4 mb-3">
+                <label for="title" class="form-label">Title</label> 
+                <input type="title" class="form-control" id="title" name="title" value="{{title}}" required>
+                <strong id="titleMsg" class="text-danger"></strong>
+            </div> 
+            
+            
+            
+            <div class="col-sm-12 mb-3">
+                <textarea name="content" id="content"></textarea>
+                
+            </div>
+            
+            <div class="col-sm-12 my-5">
+                <a href="/admin/scenes" name="back" class="btn btn-secondary">Back</a> 
+                
+                <button type="submit" name="btn-submit" id="btn-submit" class="btn btn-primary"> Update </button>
+            </div>
+        </div>
+
+        </form>          
+        
+         
+  
+  
+  
+    </main>

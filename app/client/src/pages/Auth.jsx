@@ -1,24 +1,45 @@
-import { useState } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { api } from '../api';
-import { PageTitle } from '../components/Common';
+import useOriginalPage from '../original/useOriginalPage';
+import loginCss from '../original/styles/login.css?raw';
+import registerCss from '../original/styles/register.css?raw';
 export function AuthForm({ register = false }) {
   const { user, accept } = useAuth(); const navigate = useNavigate(); const [params] = useSearchParams();
-  const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
-  const rawNext = params.get('next') || '/admin';
-  const next = /^\/(?!\/)/.test(rawNext) && !rawNext.includes('\\') ? rawNext : '/admin';
-  if (user) return <Navigate to={user.role === 'admin' ? next : '/'} replace/>;
+  const [error, setError] = useState(''); const [busy, setBusy] = useState(false); const [showPassword, setShowPassword] = useState(false);
+  const [values, setValues] = useState({ name: '', email: '', phone: '', password: '' }); const [touched, setTouched] = useState({});
+  useOriginalPage({ css: register ? registerCss : loginCss, bodyClass: 'text-center', title: register ? 'User Registration | GraphenePHP' : 'Login | GraphenePHP', cssBeforeStyles: register });
+  const rawNext = params.get('next') || '/'; const next = /^\/(?!\/)/.test(rawNext) && !rawNext.includes('\\') ? rawNext : '/';
+  if (user) return <Navigate to={next} replace/>;
+  function validate(name, value) {
+    if (name === 'name') return !value ? "Name can't be empty" : value.length <= 5 ? "Name can't be less than 6 Characters" : '';
+    if (name === 'email') return !value.trim() ? "Email can't be empty" : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Email is invalid' : '';
+    if (name === 'phone') return !value.trim() ? "Mobile number can't be empty" : !/^[6-9][0-9]{9}$/.test(value) ? 'Mobile number is invalid (10 digits only)' : '';
+    if (value.length <= 5) return 'Password must be atleast 6 charecters';
+    if (!/[a-z]/i.test(value)) return 'Must contain atleast one lowercase alphabet';
+    if (!/[0-9]/.test(value)) return 'Must contain atleast one number';
+    if (!/\W|_/.test(value)) return 'Must contain atleast one special character';
+    if (!/[A-Z]/.test(value)) return 'Must contain atleast one uppercase alphabet';
+    return '';
+  }
   async function submit(event) {
     event.preventDefault(); setBusy(true); setError('');
-    const body = Object.fromEntries(new FormData(event.currentTarget));
-    try { const data = await api(`/auth/${register ? 'register' : 'login'}`, { method: 'POST', body }); accept(data); navigate(data.user.role === 'admin' ? next : '/', { replace: true }); }
+    try { const data = await api(`/auth/${register ? 'register' : 'login'}`, { method: 'POST', body: values }); accept(data); navigate(next, { replace: true }); }
     catch (e) { setError(e.message); } finally { setBusy(false); }
   }
-  return <div className="auth card"><PageTitle title={register ? 'Create account' : 'Log in'}/><h1>{register ? 'Create account' : 'Welcome back'}</h1><form onSubmit={submit}>{register && <label>Name<input name="name" autoComplete="name" minLength={2} maxLength={100} required/></label>}<label>Email<input type="email" name="email" autoComplete="email" required maxLength={254}/></label><label>Password<input type="password" name="password" autoComplete={register ? 'new-password' : 'current-password'} minLength={register ? 12 : 1} maxLength={256} required/></label>{register && <p className="muted">Use at least 12 characters.</p>}{error && <p role="alert" className="error">{error}</p>}<button disabled={busy}>{busy ? 'Please wait…' : register ? 'Create account' : 'Log in'}</button></form><p>{register ? 'Already have an account?' : 'Need an account?'} <Link to={register ? '/login' : '/register'}>{register ? 'Log in' : 'Register'}</Link></p></div>;
+  function input(name, placeholder, type = name) {
+    const message = touched[name] ? validate(name, values[name]) : '';
+    return <div className="mb-3"><input name={name} type={type} id={name} className={`form-control${touched[name] ? message ? ' is-invalid' : ' is-valid' : ''}`} placeholder={placeholder} required value={values[name]} onChange={event => { setValues(v => ({ ...v, [name]: event.target.value })); setTouched(t => ({ ...t, [name]: true })); }} onBlur={() => setTouched(t => ({ ...t, [name]: true }))}/><strong id={`${name}Msg`} className="text-danger errorMsg my-2 fw-bolder">{message}</strong></div>;
+  }
+  const disabled = busy || ['email', 'password', ...(register ? ['name'] : [])].some(key => validate(key, values[key]));
+  return <><div className="logo mt-5 pt-5"><a href="/"><img src="/assets/img/imradhe.jpg" alt={register ? 'GraphenePHP' : 'graphene'} className="img-fluid"/></a></div><form method="POST" name={register ? 'Register' : 'Login'} className="form-signin" onSubmit={submit}><h2 className="mb-3 fw-bolder">{register ? 'User Registration ' : 'Log In'}</h2>{params.get('loggedout') && <div className="alert alert-success" role="alert">Logged Out Successfully</div>}{error && <div className="alert alert-danger" role="alert">{error}</div>}{register && input('name', 'Name')}{input('email', 'Email')}{register && input('phone', 'phone')}<div className="text-end"><span className="text-graphene user-select-none" id="eye" onClick={() => setShowPassword(!showPassword)}><i className={`bi bi-eye${showPassword ? '-slash' : ''}-fill`}/>{showPassword ? ' Hide Password' : ' Show Password'}</span></div>{input('password', 'Password', showPassword ? 'text' : 'password')}<button className={`btn btn-lg ${register ? '' : 'btn '}btn-graphene btn-block`} id={register ? 'btn-register' : 'btn-login'} name={register ? 'btn-register' : 'btn-login'} type="submit" disabled={!!disabled}>{register ? 'Register' : 'Sign in'}</button><p className="mt-3">{register ? 'Already Have an account? ' : "Don't Have an account? "}<a href={register ? '/login' : '/register'}>{register ? 'Login Now' : 'Register Now'}</a></p></form></>;
 }
 export function Logout() {
-  const { user, logout } = useAuth(); const navigate = useNavigate(); const [error, setError] = useState('');
-  if (!user) return <Navigate to="/login" replace/>;
-  return <div className="auth card"><h1>Log out</h1><p>You’re signed in as {user.email}.</p>{error && <p role="alert">{error}</p>}<button onClick={async () => { try { await logout(); navigate('/login'); } catch (e) { setError(e.message); } }}>Log out</button></div>;
+  const { user, loading, logout } = useAuth(); const [error, setError] = useState('');
+  useOriginalPage({ title: 'Logout' });
+  // The original logout route immediately returned to the login page.
+  useEffect(() => { if (!loading && user) logout().then(() => window.location.replace('/login?loggedout=true')).catch(e => setError(e.message)); }, [loading, user]);
+  if (!loading && !user) return <Navigate to="/login?loggedout=true" replace/>;
+  return error ? <div className="alert alert-danger" role="alert">{error}</div> : null;
 }
