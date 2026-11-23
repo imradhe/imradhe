@@ -1,0 +1,9 @@
+> Mighty Little Man enroute to pro
+
+**PhD Researcher** in **Computational Linguistics** at **IIIT Hyderabad**, working on rich speech processing and style- and context-aware speech translation for Indian languages.
+
+Experienced in ASR, TTS, data collection, and low-resource NLP, with hands-on work at AI4Bharat, IIT Madras.
+
+[more]
+
+Also builds research-driven software tools and products at the intersection of language technology, education, and culture.

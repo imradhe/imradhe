@@ -5,7 +5,7 @@ import { useResource } from '../hooks';
 import OriginalMarkup, { escapeHtml } from '../original/OriginalMarkup';
 import useOriginalPage, { loadScript } from '../original/useOriginalPage';
 import template from '../original/portfolio.html?raw';
-import panes from '../../../data/portfolio-panes.json';
+import { pageToHtml } from '../original/pageText';
 import css from '../original/styles/portfolio.css?raw';
 const iconMap = { Website: 'bi-globe', GitHub: 'bi-github', Docs: 'bi-journal-text', Demo: 'bi-play-circle', Video: 'bi-youtube', 'Play Store': 'bi-google-play', 'App Store': 'bi-apple', Colab: 'bi-cpu', 'Google Colab': 'bi-cpu', 'Research Paper': 'bi-file-earmark-text', Paper: 'bi-file-earmark-text', Publication: 'bi-file-earmark-text', Slides: 'bi-sliders', ArXiv: 'bi-file-earmark-pdf', HuggingFace: 'bi-emoji-smile', Kaggle: 'bi-bar-chart', 'Semantic Scholar': 'bi-mortarboard', Spotify: 'bi-spotify' };
 const capitalize = str => str ? str[0].toUpperCase() + str.slice(1).toLowerCase() : str;
@@ -59,8 +59,8 @@ export default function Portfolio() {
     if (node.attribs?.id === 'expand') return render(undefined, { className: `collapse${readMore ? ' show' : ''}` });
     if (node.name === 'a' && node.attribs['data-bs-target'] === '#expand') return render(<span style={readMore ? { display: 'none' } : undefined}>Read More</span>, { 'data-bs-toggle': undefined, 'data-bs-target': undefined, onClick: event => { event.preventDefault(); setReadMore(true); } });
   }
-  const pageHtml = resource.data?.pages?.[section] ?? panes[section] ?? panes.about;
-  let content = <OriginalMarkup html={pageHtml} replace={aboutReplace}/>;
+  const pageKey = ['skills', 'interests'].includes(section) ? section : 'about';
+  let content = <OriginalMarkup html={pageToHtml(pageKey, resource.data?.pages?.[pageKey] || '')} replace={aboutReplace}/>;
   if (section === 'publications') content = resource.data ? <Publications publications={resource.data.publications || []} scholar={resource.data.links?.scholar}/> : null;
   if (['education', 'experience', 'projects'].includes(section)) content = resource.data ? section === 'projects' ? <Projects projects={resource.data.projects}/> : <Timeline section={section} data={resource.data[section]}/> : resource.error ? <p className="text-danger" role="alert">{resource.error.message}</p> : null;
   return <OriginalMarkup html={template} replace={(node, render) => {

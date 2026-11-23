@@ -13,6 +13,14 @@ import sceneNew from '../original/admin-scenes-new.html?raw';
 import sceneEdit from '../original/admin-scenes-edit.html?raw';
 export function AdminLayout({ children, css = '' }) {
   const { pathname } = useLocation();
+  // Client-side navigation keeps the mobile sidebar open (Bootstrap toggles it with JS), so close it on every route change.
+  useEffect(() => {
+    const menu = document.getElementById('sidebarMenu');
+    if (!menu || !menu.classList.contains('show')) return;
+    const instance = window.bootstrap?.Collapse?.getInstance(menu);
+    if (instance) instance.hide(); else menu.classList.remove('show');
+    document.querySelectorAll('[aria-controls="sidebarMenu"],[data-bs-target="#sidebarMenu"]').forEach(button => button.setAttribute('aria-expanded', 'false'));
+  }, [pathname]);
   useOriginalPage({ styles: adminStyles, css, bodyClass: '', title: 'Radhe Shyam Salopanthula Admin Panel' });
   return <><OriginalMarkup html={header}/><div className="container-fluid"><div className="row"><OriginalMarkup html={sidebar} replace={(node, render) => { const attrs = node.attribs; if (attrs.class?.includes('nav-link') && attrs.href === pathname) return render(undefined, { className: attrs.class + ' active' }); }}/>{children}</div></div></>;
 }

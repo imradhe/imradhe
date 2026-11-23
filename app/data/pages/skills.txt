@@ -1,0 +1,14 @@
+Areas/Domains
+Speech Synthesis (TTS), Automatic Speech Recognition (ASR), NLP, Product Development in EdTech, AR, and EventTech
+
+Programming Languages
+Python, JavaScript, TypeScript, HTML, CSS/Sass, SQL, NoSQL, PHP, C/C++
+
+Libraries & Frameworks
+Three.js, React, Node.js, Express, Django, Laravel, Angular, Bootstrap
+
+Design
+Figma, Photoshop, Illustrator, Canva, UI/UX
+
+Inter-Personal & Cognitive Skills
+First-Principles Thinking, Proactiveness, Deep Thinking, Efficient Problem Solving, Branding, Holistic Systems Design

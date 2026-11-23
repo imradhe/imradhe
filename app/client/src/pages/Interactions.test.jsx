@@ -6,6 +6,7 @@ import { AuthForm, afterLoginPath } from './Auth';
 import { api } from '../api';
 import { srtTime, toSrt } from './Dhwani';
 import OriginalMarkup, { isAppPath } from '../original/OriginalMarkup';
+import { pageToHtml } from '../original/pageText';
 vi.mock('../auth', () => ({ useAuth: () => ({ user: null, accept: vi.fn() }) }));
 vi.mock('../api', () => ({ api: vi.fn() }));
 const wrap = component => render(<MemoryRouter>{component}</MemoryRouter>);
@@ -88,6 +89,21 @@ describe('client-side navigation', () => {
     expect(isAppPath('//evil.example')).toBe(false);
     expect(isAppPath('https://imradhe.com')).toBe(false);
     expect(isAppPath('/doc.pdf?x=1')).toBe(false);
+  });
+});
+
+describe('text pages', () => {
+  it('renders labelled skills blocks with the original bold heading and paragraph markup', () => {
+    expect(pageToHtml('skills', 'Design\nFigma, UI/UX\n\nDomains\nTTS <script>x</script>')).toBe('<b>Design</b><p>Figma, UI/UX</p><b>Domains</b><p>TTS &lt;script&gt;x&lt;/script&gt;</p>');
+  });
+  it('keeps About text escaped, puts the quote first, and wraps everything after [more] in the Read More section', () => {
+    const html = pageToHtml('about', '> Quote here\n\n**Bold** text <img src=x onerror=alert(1)>\n\n[more]\n\nHidden part');
+    expect(html.startsWith('<blockquote class="text-center"><strong><q>Quote here</q></strong></blockquote><strong>Bold</strong> text &lt;img')).toBe(true);
+    expect(html).toContain('<span class="collapse" id="expand"><br><br>Hidden part</span>');
+    expect(html).toContain('data-bs-target="#expand"');
+    expect(html).toContain('Download Resume');
+    expect(html).not.toContain('<img');
+    expect(html).toContain('&lt;img');
   });
 });
 

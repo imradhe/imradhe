@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 import { databaseReady } from './database.js';
 import { config } from './config.js';
 import { Story, Scene, Post, User, Log, Flag, Entry, Page, Profile, genres } from './models.js';
-import { schemas, validateEntry, validateProfile, cleanPageHtml, pageKeys, publicPortfolio } from './portfolio.js';
+import { schemas, validateEntry, validateProfile, cleanPageText, pageKeys, pageText, publicPortfolio } from './portfolio.js';
 import { hashPassword, verifyPassword, startSession, requireUser, requireAdmin, requireCsrf, publicUser, endSession } from './auth.js';
 import { cleanHtml, postJson, legacyRoutes, staticPages, validSlug } from './content.js';
 
@@ -203,12 +203,16 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
     if (!result) return res.status(404).json({ message: 'Record not found.' });
     res.json({ message: 'Deleted.' });
   });
-  app.get('/api/admin/pages', ...admin, async (_req, res) => res.json(await Page.find().lean()));
+  app.get('/api/admin/pages', ...admin, async (_req, res) => {
+    const stored = Object.fromEntries((await Page.find().lean()).map(p => [p.key, p]));
+    res.json(await Promise.all(pageKeys.map(async key => ({ key, text: stored[key]?.text ?? await pageText(key) }))));
+  });
   app.put('/api/admin/pages/:key', ...mutation, async (req, res) => {
     if (!pageKeys.includes(req.params.key)) return res.status(404).json({ message: 'Unknown page.' });
-    const html = cleanPageHtml(req.body?.html);
-    if (html.length > 200000) return res.status(400).json({ message: 'Page is too long (200 KB maximum).' });
-    res.json(await Page.findOneAndUpdate({ key: req.params.key }, { $set: { html } }, { upsert: true, new: true }));
+    if (typeof req.body?.text !== 'string') return res.status(400).json({ message: 'Send the page text.' });
+    const text = cleanPageText(req.body.text);
+    if (text.length > 20000) return res.status(400).json({ message: 'Page is too long (20,000 characters maximum).' });
+    res.json(await Page.findOneAndUpdate({ key: req.params.key }, { $set: { text } }, { upsert: true, new: true }));
   });
   app.get('/api/admin/profile', ...admin, async (_req, res) => res.json((await Profile.findOne({ key: 'main' }).lean()) || { links: {} }));
   app.put('/api/admin/profile', ...mutation, async (req, res) => {

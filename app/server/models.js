@@ -33,7 +33,7 @@ export const Entry = mongoose.model('Entry', new Schema({
 }, dates));
 export const Page = mongoose.model('Page', new Schema({
   key: { type: String, enum: ['about', 'skills', 'interests'], required: true, unique: true },
-  html: { type: String, maxlength: 200000, default: '' }
+  text: { type: String, maxlength: 20000, default: '' }
 }, dates));
 export const Profile = mongoose.model('Profile', new Schema({
   key: { type: String, default: 'main', unique: true },

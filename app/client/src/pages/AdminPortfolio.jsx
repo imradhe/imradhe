@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { useResource } from '../hooks';
+import { pageHelp } from '../original/pageText';
 import { AdminLayout } from './Admin';
 
 // Field lists drive both the form and the table. The server enforces the same rules.
@@ -84,14 +85,14 @@ export function AdminProfile() {
 export function AdminPage() {
   const { key } = useParams();
   const resource = useResource('/admin/pages');
-  const [html, setHtml] = useState(null); const [message, setMessage] = useState(''); const [error, setError] = useState('');
+  const [text, setText] = useState(null); const [message, setMessage] = useState(''); const [error, setError] = useState('');
   const page = (resource.data || []).find(p => p.key === key);
-  useEffect(() => { if (page && html === null) setHtml(page.html); }, [page, html]);
+  useEffect(() => { if (page && text === null) setText(page.text || ''); }, [page, text]);
   if (!pageSections[key]) return <AdminLayout><main className="col-md-9 ms-sm-auto col-lg-10 px-md-4"><p className="text-danger mt-5">Unknown page.</p></main></AdminLayout>;
   async function save(event) {
     event.preventDefault(); setError(''); setMessage('');
-    try { await api(`/admin/pages/${key}`, { method: 'PUT', body: { html } }); setMessage('Saved. Reload the public page to see it.'); resource.reload(); }
+    try { await api(`/admin/pages/${key}`, { method: 'PUT', body: { text } }); setMessage('Saved.'); resource.reload(); }
     catch (e) { setError(e.message); }
   }
-  return <AdminLayout><main className="col-md-9 ms-sm-auto col-lg-10 px-md-4"><h1 className="h2 pt-3">{pageSections[key]} page</h1><p className="text-muted small">HTML, the same markup the public page uses. Scripts, event handlers and inline JavaScript are removed on save.</p>{error && <p className="text-danger" role="alert">{error}</p>}{message && <p className="text-success" role="status">{message}</p>}{html !== null && <form onSubmit={save} className="mb-5"><textarea className="form-control font-monospace mb-3" rows={24} value={html} onChange={e => setHtml(e.target.value)} aria-label={`${pageSections[key]} HTML`}/><button className="btn btn-primary" type="submit">Save</button></form>}</main></AdminLayout>;
+  return <AdminLayout><main className="col-md-9 ms-sm-auto col-lg-10 px-md-4"><h1 className="h2 pt-3">{pageSections[key]} page</h1><p className="text-muted small">{pageHelp[key]}</p>{error && <p className="text-danger" role="alert">{error}</p>}{message && <p className="text-success" role="status">{message}</p>}{text !== null && <form onSubmit={save} className="mb-5"><textarea className="form-control mb-3" rows={20} value={text} onChange={e => setText(e.target.value)} aria-label={`${pageSections[key]} text`}/><button className="btn btn-primary" type="submit">Save</button></form>}</main></AdminLayout>;
 }

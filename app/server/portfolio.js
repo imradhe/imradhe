@@ -1,4 +1,3 @@
-import sanitizeHtml from 'sanitize-html';
 import { readFile } from 'node:fs/promises';
 import { root } from './config.js';
 import { Entry, Page, Profile, Entries } from './models.js';
@@ -12,13 +11,10 @@ export const schemas = {
 };
 export const profileKeys = ['scholar', 'linkedin', 'github', 'instagram', 'twitter'];
 export const pageKeys = ['about', 'skills', 'interests'];
-const pageTags = ['p', 'b', 'i', 'em', 'strong', 'u', 'small', 'span', 'div', 'a', 'ul', 'ol', 'li', 'br', 'hr', 'blockquote', 'q', 'img', 'figure', 'figcaption', 'h1', 'h2', 'h3', 'h4', 'h5', 'table', 'thead', 'tbody', 'tr', 'th', 'td'];
+// Pages are plain text. The client turns it into the page markup, so no HTML is ever stored.
+export const cleanPageText = value => String(value ?? '').replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/[ \t]+$/gm, '').trim();
 
 export const safeLink = value => typeof value === 'string' && value.length <= 2000 && (/^https?:\/\/[^\s]+$/.test(value) || /^\/(?!\/)[^\s]*$/.test(value) || /^assets\/[^\s]+$/.test(value));
-export const cleanPageHtml = value => sanitizeHtml(String(value ?? ''), {
-  allowedTags: pageTags, allowedAttributes: { a: ['href', 'title', 'target', 'rel', 'data-bs-toggle', 'data-bs-target', 'role'], img: ['src', 'alt', 'width', 'height'], '*': ['class', 'id', 'style', 'lang'] },
-  allowedSchemes: ['http', 'https', 'mailto', 'tel'], allowProtocolRelative: false, allowedSchemesByTag: {}
-});
 
 // Returns { data } on success or { error } with a message the admin UI can show.
 export function validateEntry(kind, input, { update = false } = {}) {
@@ -84,10 +80,9 @@ export async function seedPortfolio() {
     counts[kind] = items.length;
   }
   if (!(await Entry.exists({ kind: 'publication' }))) counts.publication = 0;
-  const panes = await readJson('data/portfolio-panes.json');
   for (const key of pageKeys) {
-    if (!panes || !panes[key] || await Page.exists({ key })) continue;
-    await Page.create({ key, html: panes[key] });
+    if (await Page.exists({ key })) continue;
+    await Page.create({ key, text: await pageText(key) });
     counts[`page:${key}`] = 1;
   }
   if (!(await Profile.exists({ key: 'main' }))) await Profile.create({ key: 'main', links: {
@@ -96,16 +91,22 @@ export async function seedPortfolio() {
 }
 
 // Public payload. Falls back to the bundled JSON when the database is unavailable.
+// Bundled text, used for the first import and when the database is unavailable.
+export async function pageText(key) {
+  return cleanPageText(await readFile(`${root}/data/pages/${key}.txt`, 'utf8'));
+}
 export async function publicPortfolio(databaseReady) {
   if (!databaseReady()) {
     const portfolio = await readJson('data/portfolio.json');
-    return { education: portfolio.education, experience: portfolio.experience, projects: portfolio.projects, publications: [], pages: null, links: {} };
+    const pages = Object.fromEntries(await Promise.all(pageKeys.map(async key => [key, await pageText(key)])));
+    return { education: portfolio.education, experience: portfolio.experience, projects: portfolio.projects, publications: [], pages, links: {} };
   }
   const entries = await Entry.find().sort({ order: 1, createdDate: 1 }).lean();
   const of = kind => entries.filter(e => e.kind === kind).map(e => e.data);
-  const pages = Object.fromEntries((await Page.find().lean()).map(p => [p.key, p.html]));
+  const stored = Object.fromEntries((await Page.find().lean()).map(p => [p.key, p.text]));
+  const pages = Object.fromEntries(await Promise.all(pageKeys.map(async key => [key, stored[key] ?? await pageText(key)])));
   const profile = await Profile.findOne({ key: 'main' }).lean();
   return { education: of('education'), experience: of('experience'), projects: of('project'), publications: of('publication'),
-    pages: pageKeys.every(k => k in pages) ? pages : null, links: profile?.links || {} };
+    pages, links: profile?.links || {} };
 }
 export { Entries };

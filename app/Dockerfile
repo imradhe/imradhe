@@ -3,7 +3,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --no-audit --no-fund
 COPY client ./client
-COPY data/portfolio-panes.json ./data/portfolio-panes.json
 COPY vite.config.js ./
 RUN npm run build
 
