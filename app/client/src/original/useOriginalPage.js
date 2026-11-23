@@ -14,6 +14,11 @@ const sheets = new Map();
 function acquireSheet(href) {
   let entry = sheets.get(href);
   if (!entry) {
+    // Adopt a stylesheet already in the app shell (index.html) so it is never duplicated or removed.
+    const shell = [...document.querySelectorAll('link[rel="stylesheet"]')].find(link => link.getAttribute('href') === href);
+    if (shell) { entry = { link: shell, count: 0, permanent: true }; sheets.set(href, entry); }
+  }
+  if (!entry) {
     const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = href; document.head.append(link);
     entry = { link, count: 0 }; sheets.set(href, entry);
   }
@@ -23,7 +28,7 @@ function acquireSheet(href) {
 function releaseSheet(href) {
   const entry = sheets.get(href); if (!entry) return;
   entry.count -= 1;
-  if (entry.count <= 0) setTimeout(() => { if (entry.count <= 0 && sheets.get(href) === entry) { entry.link.remove(); sheets.delete(href); } }, 0);
+  if (entry.count <= 0 && !entry.permanent) setTimeout(() => { if (entry.count <= 0 && sheets.get(href) === entry) { entry.link.remove(); sheets.delete(href); } }, 0);
 }
 export default function useOriginalPage({ css = '', styles = baseStyles, bodyClass = 'light', bodyStyle = '', title, cssBeforeStyles = false } = {}) {
   useLayoutEffect(() => {

@@ -11,7 +11,7 @@ import storyNew from '../original/admin-stories-new.html?raw';
 import storyEdit from '../original/admin-stories-edit.html?raw';
 import sceneNew from '../original/admin-scenes-new.html?raw';
 import sceneEdit from '../original/admin-scenes-edit.html?raw';
-function AdminLayout({ children, css = '' }) {
+export function AdminLayout({ children, css = '' }) {
   const { pathname } = useLocation();
   useOriginalPage({ styles: adminStyles, css, bodyClass: '', title: 'Radhe Shyam Salopanthula Admin Panel' });
   return <><OriginalMarkup html={header}/><div className="container-fluid"><div className="row"><OriginalMarkup html={sidebar} replace={(node, render) => { const attrs = node.attribs; if (attrs.class?.includes('nav-link') && attrs.href === pathname) return render(undefined, { className: attrs.class + ' active' }); }}/>{children}</div></div></>;

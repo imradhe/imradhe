@@ -5,7 +5,7 @@ import { useResource } from '../hooks';
 import OriginalMarkup, { escapeHtml } from '../original/OriginalMarkup';
 import useOriginalPage, { loadScript } from '../original/useOriginalPage';
 import template from '../original/portfolio.html?raw';
-import panes from '../original/portfolio-panes.json';
+import panes from '../../../data/portfolio-panes.json';
 import css from '../original/styles/portfolio.css?raw';
 const iconMap = { Website: 'bi-globe', GitHub: 'bi-github', Docs: 'bi-journal-text', Demo: 'bi-play-circle', Video: 'bi-youtube', 'Play Store': 'bi-google-play', 'App Store': 'bi-apple', Colab: 'bi-cpu', 'Google Colab': 'bi-cpu', 'Research Paper': 'bi-file-earmark-text', Paper: 'bi-file-earmark-text', Publication: 'bi-file-earmark-text', Slides: 'bi-sliders', ArXiv: 'bi-file-earmark-pdf', HuggingFace: 'bi-emoji-smile', Kaggle: 'bi-bar-chart', 'Semantic Scholar': 'bi-mortarboard', Spotify: 'bi-spotify' };
 const capitalize = str => str ? str[0].toUpperCase() + str.slice(1).toLowerCase() : str;
@@ -22,6 +22,9 @@ function Timeline({ section, data }) {
   const companies = {};
   for (const role of data) (companies[role.company] ||= []).push(role);
   return <div className="timeline experiences mb-5 pb-5">{Object.entries(companies).map(([company, roles]) => <div className="timeline-item position-relative mb-5" key={company}><div className="timeline-dot"/><div className="timeline-content ms-4"><h4 className="company fw-bold mb-1">{company}{roles.some(role => role.end.toLowerCase() === 'present') && <span className="badge bg-dark text-light rounded ms-2">Current</span>}</h4>{[...roles].sort((a, b) => new Date(b.start) - new Date(a.start)).map((role, i) => <div className="role-block mb-3" key={i}><h6 className="mb-1">{role.start} - {capitalize(role.end)}</h6><h5 className="fw-bolder mb-1">{role.position}</h5><div className="mb-2"><OriginalMarkup html={marked.parse(role.description)}/></div></div>)}</div></div>)}</div>;
+}
+function Publications({ publications, scholar }) {
+  return <div className="publications mb-5 pb-5">{publications.length === 0 && <p className="text-muted">Publications will appear here.</p>}{publications.map((item, index) => <div className="mb-4 ps-3 border-start border-4" key={index}><div className="fw-bold">{item.url ? <a href={item.url} target="_blank" rel="noopener" className="text-dark text-decoration-none">{item.title}</a> : item.title}</div>{item.authors && <div className="small text-muted">{item.authors}</div>}<div className="small">{[item.venue, item.year].filter(Boolean).join(', ')}</div>{item.description && <p className="mb-0 mt-1">{item.description}</p>}</div>)}{scholar && <p className="mt-4"><a href={scholar} target="_blank" rel="noopener" className="text-decoration-none"><i className="bi bi-mortarboard me-1"/>View all publications on Google Scholar</a></p>}</div>;
 }
 export default function Portfolio() {
   const { pathname } = useLocation();
@@ -56,11 +59,14 @@ export default function Portfolio() {
     if (node.attribs?.id === 'expand') return render(undefined, { className: `collapse${readMore ? ' show' : ''}` });
     if (node.name === 'a' && node.attribs['data-bs-target'] === '#expand') return render(<span style={readMore ? { display: 'none' } : undefined}>Read More</span>, { 'data-bs-toggle': undefined, 'data-bs-target': undefined, onClick: event => { event.preventDefault(); setReadMore(true); } });
   }
-  let content = <OriginalMarkup html={panes[section] || panes.about} replace={aboutReplace}/>;
+  const pageHtml = resource.data?.pages?.[section] ?? panes[section] ?? panes.about;
+  let content = <OriginalMarkup html={pageHtml} replace={aboutReplace}/>;
+  if (section === 'publications') content = resource.data ? <Publications publications={resource.data.publications || []} scholar={resource.data.links?.scholar}/> : null;
   if (['education', 'experience', 'projects'].includes(section)) content = resource.data ? section === 'projects' ? <Projects projects={resource.data.projects}/> : <Timeline section={section} data={resource.data[section]}/> : resource.error ? <p className="text-danger" role="alert">{resource.error.message}</p> : null;
   return <OriginalMarkup html={template} replace={(node, render) => {
     const attrs = node.attribs;
     if (attrs.id === 'about-tab-pane') return render(content);
+    if (node.name === 'a' && attrs['data-profile'] && resource.data) { const url = resource.data.links?.[attrs['data-profile']]; return url ? render(undefined, { href: url }) : <></>; }
     if (attrs.class?.includes('name-flicker')) return render(name);
     if (node.name === 'a' && attrs.class?.includes('nav-link')) return render(undefined, { className: attrs.class + (attrs.href === pathname ? ' active' : ''), role: 'tab', 'aria-selected': attrs.href === pathname });
     if (attrs.id === 'shareUrl') return <input type="url" className="form-control" id="shareUrl" readOnly value={window.location.href}/>;

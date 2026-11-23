@@ -3,6 +3,7 @@ import { connectDatabase } from '../database.js';
 import { readFile, readdir } from 'node:fs/promises';
 import { config, root } from '../config.js';
 import { Story, Scene, Post } from '../models.js';
+import { seedPortfolio } from '../portfolio.js';
 import { cleanHtml, validSlug } from '../content.js';
 
 export function parsePost(slug, source) {
@@ -34,7 +35,8 @@ export async function seedContent() {
     await Post.updateOne({ slug: post.slug }, { $setOnInsert: post }, { upsert: true, runValidators: true });
     posts++;
   }
-  return { stories: data.stories.length, scenes: data.scenes.length, posts };
+  const portfolio = await seedPortfolio();
+  return { stories: data.stories.length, scenes: data.scenes.length, posts, portfolio };
 }
 if (process.argv[1] && new URL(import.meta.url).pathname === process.argv[1]) {
   try {

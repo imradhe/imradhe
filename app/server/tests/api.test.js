@@ -116,6 +116,32 @@ test('blog supports Markdown, drafts, CRUD, safe HTML and search metadata', asyn
   assert.match(page.text, /Safe &lt;title&gt;/); assert.match(page.text, /A &quot;description&quot;/);
   await admin.put('/api/admin/posts/public-post').set('x-csrf-token', adminCsrf).send({ title: 'Updated public post' }).expect(200);
 });
+test('portfolio sections, publications, pages and profile links are validated, sanitized and public', async () => {
+  const pub = { title: 'A test publication', authors: 'R. Test', venue: 'ACL', year: '2025', url: 'https://example.org/paper' };
+  const created = await admin.post('/api/admin/entries').set('x-csrf-token', adminCsrf).send({ kind: 'publication', data: pub }).expect(201);
+  await admin.post('/api/admin/entries').set('x-csrf-token', adminCsrf).send({ kind: 'publication', data: { ...pub, year: 1800 } }).expect(400);
+  await admin.post('/api/admin/entries').set('x-csrf-token', adminCsrf).send({ kind: 'publication', data: { ...pub, url: 'javascript:alert(1)' } }).expect(400);
+  await admin.post('/api/admin/entries').set('x-csrf-token', adminCsrf).send({ kind: 'nonsense', data: pub }).expect(400);
+  await admin.post('/api/admin/entries').set('x-csrf-token', adminCsrf).send({ kind: 'project', data: { title: 'P', links: 'Site | javascript:alert(1)' } }).expect(400);
+  const project = await admin.post('/api/admin/entries').set('x-csrf-token', adminCsrf).send({ kind: 'project', data: { title: 'Tool', links: 'Website | https://example.org', tags: 'nlp, speech' } }).expect(201);
+  assert.deepEqual(project.body.links, { Website: 'https://example.org' }); assert.deepEqual(project.body.tags, ['nlp', 'speech']);
+  await admin.put(`/api/admin/entries/${created.body._id}`).set('x-csrf-token', adminCsrf).send({ data: { ...pub, title: 'Renamed publication', kind: 'project' } }).expect(200);
+  const listed = await admin.get('/api/admin/entries?kind=publication').expect(200);
+  assert.equal(listed.body[0].title, 'Renamed publication'); assert.equal(listed.body[0].kind, 'publication');
+  const page = await admin.put('/api/admin/pages/about').set('x-csrf-token', adminCsrf).send({ html: '<p class="x">Hi</p><script>bad()</script><a href="javascript:x()" onclick="bad()">link</a>' }).expect(200);
+  assert.doesNotMatch(page.body.html, /script|javascript:|onclick/); assert.match(page.body.html, /class="x"/);
+  await admin.put('/api/admin/pages/nothing').set('x-csrf-token', adminCsrf).send({ html: 'x' }).expect(404);
+  await admin.put('/api/admin/profile').set('x-csrf-token', adminCsrf).send({ links: { scholar: 'https://scholar.google.com/citations?user=abc', evil: 'https://x.org' } }).expect(200);
+  await admin.put('/api/admin/profile').set('x-csrf-token', adminCsrf).send({ links: { scholar: 'javascript:alert(1)' } }).expect(400);
+  const portfolio = (await request(app).get('/api/portfolio').expect(200)).body;
+  assert.equal(portfolio.publications[0].title, 'Renamed publication'); assert.equal(portfolio.links.scholar, 'https://scholar.google.com/citations?user=abc');
+  assert.equal(portfolio.links.evil, undefined); assert.ok(portfolio.education.length >= 1); assert.ok(portfolio.pages.about.includes('Hi'));
+  await member.get('/api/admin/entries?kind=publication').expect(403);
+  await member.put('/api/admin/profile').set('x-csrf-token', memberCsrf).send({ links: {} }).expect(403);
+  await admin.delete(`/api/admin/entries/${created.body._id}`).set('x-csrf-token', adminCsrf).send({}).expect(200);
+  await admin.delete(`/api/admin/entries/${created.body._id}`).set('x-csrf-token', adminCsrf).send({}).expect(404);
+});
+
 test('flag endpoints preserve legacy envelopes and enforce ownership and admin aggregates', async () => {
   const flag = { projectID: 'p1', taskID: 't1', annotator: 'reader@example.com', reviewer: 'owner@example.com', superchecker: '', flag: 'Check audio', segment: '0-10', role: 'annotator' };
   await member.post('/api/flag').set('x-csrf-token', memberCsrf).send({ ...flag, annotator: 'someone@example.com' }).expect(403);

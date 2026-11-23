@@ -8,9 +8,10 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { databaseReady } from './database.js';
 import { config } from './config.js';
-import { Story, Scene, Post, User, Log, Flag, genres } from './models.js';
+import { Story, Scene, Post, User, Log, Flag, Entry, Page, Profile, genres } from './models.js';
+import { schemas, validateEntry, validateProfile, cleanPageHtml, pageKeys, publicPortfolio } from './portfolio.js';
 import { hashPassword, verifyPassword, startSession, requireUser, requireAdmin, requireCsrf, publicUser, endSession } from './auth.js';
-import { cleanHtml, postJson, portfolio, legacyRoutes, staticPages, validSlug } from './content.js';
+import { cleanHtml, postJson, legacyRoutes, staticPages, validSlug } from './content.js';
 
 const pick = (body, fields) => Object.fromEntries(fields.filter(k => body[k] !== undefined).map(k => [k, body[k]]));
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -48,7 +49,7 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
     }
     next();
   });
-  app.get('/api/portfolio', (_req, res) => res.json(portfolio));
+  app.get('/api/portfolio', async (_req, res) => res.json(await publicPortfolio(databaseReady)));
   app.get('/api/routes', (_req, res) => res.json(envelope(legacyRoutes)));
   app.get('/api/chats', async (_req, res) => res.json(JSON.parse(await readFile(path.join(settings.publicDir, 'assets/data/chat.json'), 'utf8'))));
   app.get('/api/genres', (_req, res) => res.json(genres));
@@ -171,6 +172,50 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
       res.json({ message: 'Deleted.' });
     });
   }
+  // Portfolio sections: one collection with a per-kind allowlist; pages and profile links are singletons.
+  // Admin responses are flat (fields at the top level, plus _id, kind and order) to match the forms.
+  const flatEntry = e => ({ _id: e._id, kind: e.kind, order: e.order, ...e.data });
+  app.get('/api/admin/entries', ...admin, async (req, res) => {
+    const kind = String(req.query.kind || '');
+    if (!schemas[kind]) return res.status(400).json({ message: 'Unknown section.' });
+    res.json((await Entry.find({ kind }).sort({ order: 1, createdDate: 1 }).lean()).map(flatEntry));
+  });
+  app.post('/api/admin/entries', ...mutation, async (req, res) => {
+    const { data, error } = validateEntry(req.body?.kind, req.body?.data ?? req.body);
+    if (error) return res.status(400).json({ message: error });
+    const count = await Entry.countDocuments({ kind: data.kind });
+    const { kind, ...fields } = data;
+    const entry = await Entry.create({ kind, data: fields, order: Number.isInteger(req.body.order) ? req.body.order : count });
+    res.status(201).json(flatEntry(entry.toObject()));
+  });
+  app.put('/api/admin/entries/:id', ...mutation, async (req, res) => {
+    const current = await Entry.findById(req.params.id).lean().catch(() => null);
+    if (!current) return res.status(404).json({ message: 'Record not found.' });
+    // Validate the merged record, so a reorder-only request (or a partial edit) cannot blank required fields.
+    const { data, error } = validateEntry(current.kind, { ...current.data, ...(req.body?.data ?? {}) }, { update: true });
+    if (error) return res.status(400).json({ message: error });
+    const { kind, ...fields } = data;
+    const update = { data: fields, ...(Number.isInteger(req.body.order) ? { order: req.body.order } : {}) };
+    res.json(flatEntry((await Entry.findByIdAndUpdate(req.params.id, { $set: update }, { new: true })).toObject()));
+  });
+  app.delete('/api/admin/entries/:id', ...mutation, async (req, res) => {
+    const result = await Entry.findByIdAndDelete(req.params.id).catch(() => null);
+    if (!result) return res.status(404).json({ message: 'Record not found.' });
+    res.json({ message: 'Deleted.' });
+  });
+  app.get('/api/admin/pages', ...admin, async (_req, res) => res.json(await Page.find().lean()));
+  app.put('/api/admin/pages/:key', ...mutation, async (req, res) => {
+    if (!pageKeys.includes(req.params.key)) return res.status(404).json({ message: 'Unknown page.' });
+    const html = cleanPageHtml(req.body?.html);
+    if (html.length > 200000) return res.status(400).json({ message: 'Page is too long (200 KB maximum).' });
+    res.json(await Page.findOneAndUpdate({ key: req.params.key }, { $set: { html } }, { upsert: true, new: true }));
+  });
+  app.get('/api/admin/profile', ...admin, async (_req, res) => res.json((await Profile.findOne({ key: 'main' }).lean()) || { links: {} }));
+  app.put('/api/admin/profile', ...mutation, async (req, res) => {
+    const { links, error } = validateProfile(req.body?.links ?? req.body);
+    if (error) return res.status(400).json({ message: error });
+    res.json(await Profile.findOneAndUpdate({ key: 'main' }, { $set: { links } }, { upsert: true, new: true }));
+  });
   app.get('/api/logs', ...admin, async (_req, res) => res.json(envelope(await Log.find().select('-loginID').sort({ createdAt: -1 }).limit(500).lean())));
   app.post('/api/flag', requireUser, requireCsrf, async (req, res) => {
     const data = pick(req.body, ['projectID', 'taskID', 'annotator', 'reviewer', 'superchecker', 'flag', 'segment', 'role']);
@@ -202,16 +247,18 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
   app.use(express.static(settings.publicDir, { index: false, dotfiles: 'deny' }));
   app.use(express.static(settings.distDir, { index: false, dotfiles: 'deny' }));
   app.get('/sitemap.xml', async (_req, res) => {
-    let pages = ['/', '/education', '/skills', '/projects', '/experience', '/interests', '/blog', '/stories'];
+    let pages = ['/', '/education', '/skills', '/projects', '/experience', '/interests', '/publications', '/blog', '/stories'];
     if (databaseReady()) {
       pages = [...pages, ...(await Post.find(published).select('slug').lean()).map(p => `/blog/${p.slug}`), ...(await Scene.find().select('sceneID').lean()).map(s => `/scene/${s.sceneID}`)];
     }
     res.type('xml').send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.map(p => `<url><loc>${escape(new URL(p, settings.appUrl).href)}</loc></url>`).join('')}</urlset>`);
   });
+  // Admin screens that exist in the client; anything else under /admin is a real 404.
+  const adminPage = /^\/admin(?:\/?$|\/(?:stories|scenes|posts)(?:\/(?:new|(?:edit|delete)\/[a-z0-9-]+))?$|\/entries\/(?:education|experience|project|publication)(?:\/new|\/edit\/[a-f0-9]{24})?$|\/profile$|\/pages\/(?:about|skills|interests)$)/;
   app.get('/{*path}', async (req, res) => {
     let title = 'Radhe Shyam Salopanthula';
     let description = 'PhD researcher in Computational Linguistics at IIIT Hyderabad. Speech, language technology, and research-driven products.';
-    let found = staticPages.includes(req.path) || /^\/admin\/(stories|scenes)\/(edit|delete)\/[a-z0-9-]+$/.test(req.path);
+    let found = staticPages.includes(req.path) || adminPage.test(req.path) || req.path === '/publications';
     const match = req.path.match(/^\/(blog|scene)\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
     if (match) {
       if (!databaseReady()) return res.status(503).type('text').send('Database unavailable. Please try again shortly.');

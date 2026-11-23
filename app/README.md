@@ -57,7 +57,8 @@ Sessions are stored in MongoDB with expiration and an HttpOnly, SameSite=Strict 
 
 ## Content
 
-- `data/portfolio.json`: education, experience, and all 15 project entries; changes take effect after server restart.
+- Portfolio content is managed in the admin panel: Education, Experience, Projects, Publications (`/admin/entries/...`), About, Skills and Interests pages (`/admin/pages/...`), and Profile links including Google Scholar (`/admin/profile`). Blog posts are under `/admin/posts`.
+- `data/portfolio.json` and `data/portfolio-panes.json` are the first-run import only. `npm run seed` copies them into MongoDB when the sections are empty; it never overwrites edits made in the admin panel.
 - Blog posts are stored in MongoDB. The protected `/api/admin/posts` API accepts Markdown bodies, descriptions, tags and draft state. The public blog keeps its original UI.
 - `content/blog/*.md`: optional import source for new posts. Run `npm run seed` to insert new slugs; update existing posts through the protected posts API.
 - `/admin/stories` and `/admin/scenes`: manage story content. Scene IDs are generated as `<storyID>-<act>-<chapter>-<scene>`. Changing these numbers changes the scene URL.

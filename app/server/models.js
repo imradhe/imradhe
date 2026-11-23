@@ -25,6 +25,20 @@ export const Post = mongoose.model('Post', new Schema({
   date: { type: Date, default: Date.now }, tags: [{ type: String, maxlength: 100 }],
   draft: { type: Boolean, default: false }, body: text(1000000)
 }, dates));
+export const Entries = ['education', 'experience', 'project', 'publication'];
+export const Entry = mongoose.model('Entry', new Schema({
+  kind: { type: String, enum: Entries, required: true, index: true },
+  order: { type: Number, default: 0 },
+  data: { type: Schema.Types.Mixed, default: {} }
+}, dates));
+export const Page = mongoose.model('Page', new Schema({
+  key: { type: String, enum: ['about', 'skills', 'interests'], required: true, unique: true },
+  html: { type: String, maxlength: 200000, default: '' }
+}, dates));
+export const Profile = mongoose.model('Profile', new Schema({
+  key: { type: String, default: 'main', unique: true },
+  links: { type: Schema.Types.Mixed, default: {} }
+}, dates));
 export const User = mongoose.model('User', new Schema({
   name: text(100), phone: { type: String, maxlength: 30, default: '' }, email: { ...text(254), lowercase: true, unique: true },
   password: { ...text(512), select: false }, role: { type: String, enum: ['user', 'admin'], default: 'user' }
