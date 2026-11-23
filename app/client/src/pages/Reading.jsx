@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useResource } from '../hooks';
 import OriginalMarkup, { interpolate } from '../original/OriginalMarkup';
 import useOriginalPage from '../original/useOriginalPage';
@@ -14,13 +14,13 @@ function Metadata({ post }) { return <>{post.date && <><time dateTime={new Date(
 export function BlogIndex() {
   const resource = useResource('/posts');
   useOriginalPage({ title: `Blog | ${appName}` });
-  return <div className="d-flex justify-content-center"><main className="px-3 py-4 w-100" style={{ maxWidth: '800px' }}><a href="/" className="text-decoration-none small">← {appName}</a><h1 className="h2 fw-bolder mt-3 mb-4">Blog</h1>{resource.error && <p className="text-danger" role="alert">{resource.error.message}</p>}{resource.data?.length === 0 && <p className="text-muted">No posts yet. Check back soon.</p>}{resource.data?.map(post => <article className="mb-4 pb-3 border-bottom" key={post.slug}><h2 className="h5 fw-bold mb-1"><a href={`/blog/${post.slug}`} className="text-decoration-none">{post.title}</a></h2><div className="small text-muted mb-2"><Metadata post={post}/></div>{post.description && <p className="mb-0">{post.description}</p>}</article>)}<Footer/></main></div>;
+  return <div className="d-flex justify-content-center"><main className="px-3 py-4 w-100" style={{ maxWidth: '800px' }}><Link to="/" className="text-decoration-none small">← {appName}</Link><h1 className="h2 fw-bolder mt-3 mb-4">Blog</h1>{resource.error && <p className="text-danger" role="alert">{resource.error.message}</p>}{resource.data?.length === 0 && <p className="text-muted">No posts yet. Check back soon.</p>}{resource.data?.map(post => <article className="mb-4 pb-3 border-bottom" key={post.slug}><h2 className="h5 fw-bold mb-1"><Link to={`/blog/${post.slug}`} className="text-decoration-none">{post.title}</Link></h2><div className="small text-muted mb-2"><Metadata post={post}/></div>{post.description && <p className="mb-0">{post.description}</p>}</article>)}<Footer/></main></div>;
 }
 export function BlogPost() {
   const { slug } = useParams(); const resource = useResource(`/posts/${encodeURIComponent(slug)}`); const post = resource.data;
   useOriginalPage({ title: post ? `${post.title} | Blog | ${appName}` : `Blog | ${appName}` });
   if (resource.error?.status === 404) return <NotFound/>;
-  return <div className="d-flex justify-content-center"><main className="px-3 py-4 w-100" style={{ maxWidth: '800px' }}><a href="/blog" className="text-decoration-none small">← Blog</a>{post && <article className="mt-3"><h1 className="h2 fw-bolder mb-2">{post.title}</h1><div className="small text-muted mb-4"><Metadata post={post}/></div><div id="post-body" style={{ whiteSpace: 'normal' }}><OriginalMarkup html={post.html}/></div></article>}{resource.error && <p role="alert">{resource.error.message}</p>}<Footer/></main></div>;
+  return <div className="d-flex justify-content-center"><main className="px-3 py-4 w-100" style={{ maxWidth: '800px' }}><Link to="/blog" className="text-decoration-none small">← Blog</Link>{post && <article className="mt-3"><h1 className="h2 fw-bolder mb-2">{post.title}</h1><div className="small text-muted mb-4"><Metadata post={post}/></div><div id="post-body" style={{ whiteSpace: 'normal' }}><OriginalMarkup html={post.html}/></div></article>}{resource.error && <p role="alert">{resource.error.message}</p>}<Footer/></main></div>;
 }
 function roman(number) { const values = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]; let result = ''; for (const [value, text] of values) while (number >= value) { result += text; number -= value; } return result; }
 export function Scene() {

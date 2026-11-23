@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { api } from '../api';
 import useOriginalPage from '../original/useOriginalPage';
@@ -38,13 +38,13 @@ export function AuthForm({ register = false }) {
     return <div className="mb-3"><input name={name} type={type} id={name} className={`form-control${touched[name] ? message ? ' is-invalid' : ' is-valid' : ''}`} placeholder={placeholder} required value={values[name]} onChange={event => { setValues(v => ({ ...v, [name]: event.target.value })); setTouched(t => ({ ...t, [name]: true })); }} onBlur={() => setTouched(t => ({ ...t, [name]: true }))}/><strong id={`${name}Msg`} className="text-danger errorMsg my-2 fw-bolder">{message}</strong></div>;
   }
   const disabled = busy || ['email', 'password', ...(register ? ['name'] : [])].some(key => validate(key, values[key]));
-  return <><div className="logo mt-5 pt-5"><a href="/"><img src="/assets/img/imradhe.jpg" alt={register ? 'GraphenePHP' : 'graphene'} className="img-fluid"/></a></div><form method="POST" name={register ? 'Register' : 'Login'} className="form-signin" onSubmit={submit}><h2 className="mb-3 fw-bolder">{register ? 'User Registration ' : 'Log In'}</h2>{params.get('loggedout') && <div className="alert alert-success" role="alert">Logged Out Successfully</div>}{error && <div className="alert alert-danger" role="alert">{error}</div>}{register && input('name', 'Name')}{input('email', 'Email')}{register && input('phone', 'phone')}<div className="text-end"><span className="text-graphene user-select-none" id="eye" onClick={() => setShowPassword(!showPassword)}><i className={`bi bi-eye${showPassword ? '-slash' : ''}-fill`}/>{showPassword ? ' Hide Password' : ' Show Password'}</span></div>{input('password', 'Password', showPassword ? 'text' : 'password')}<button className={`btn btn-lg ${register ? '' : 'btn '}btn-graphene btn-block`} id={register ? 'btn-register' : 'btn-login'} name={register ? 'btn-register' : 'btn-login'} type="submit" disabled={!!disabled}>{register ? 'Register' : 'Sign in'}</button><p className="mt-3">{register ? 'Already Have an account? ' : "Don't Have an account? "}<a href={register ? '/login' : '/register'}>{register ? 'Login Now' : 'Register Now'}</a></p></form></>;
+  return <><div className="logo mt-5 pt-5"><Link to="/"><img src="/assets/img/imradhe.jpg" alt={register ? 'GraphenePHP' : 'graphene'} className="img-fluid"/></Link></div><form method="POST" name={register ? 'Register' : 'Login'} className="form-signin" onSubmit={submit}><h2 className="mb-3 fw-bolder">{register ? 'User Registration ' : 'Log In'}</h2>{params.get('loggedout') && <div className="alert alert-success" role="alert">Logged Out Successfully</div>}{error && <div className="alert alert-danger" role="alert">{error}</div>}{register && input('name', 'Name')}{input('email', 'Email')}{register && input('phone', 'phone')}<div className="text-end"><span className="text-graphene user-select-none" id="eye" onClick={() => setShowPassword(!showPassword)}><i className={`bi bi-eye${showPassword ? '-slash' : ''}-fill`}/>{showPassword ? ' Hide Password' : ' Show Password'}</span></div>{input('password', 'Password', showPassword ? 'text' : 'password')}<button className={`btn btn-lg ${register ? '' : 'btn '}btn-graphene btn-block`} id={register ? 'btn-register' : 'btn-login'} name={register ? 'btn-register' : 'btn-login'} type="submit" disabled={!!disabled}>{register ? 'Register' : 'Sign in'}</button><p className="mt-3">{register ? 'Already Have an account? ' : "Don't Have an account? "}<Link to={register ? '/login' : '/register'}>{register ? 'Login Now' : 'Register Now'}</Link></p></form></>;
 }
 export function Logout() {
-  const { user, loading, logout } = useAuth(); const [error, setError] = useState('');
+  const { user, loading, logout } = useAuth(); const [error, setError] = useState(''); const navigate = useNavigate();
   useOriginalPage({ title: 'Logout' });
   // The original logout route immediately returned to the login page.
-  useEffect(() => { if (!loading && user) logout().then(() => window.location.replace('/login?loggedout=true')).catch(e => setError(e.message)); }, [loading, user]);
+  useEffect(() => { if (!loading && user) logout().then(() => navigate('/login?loggedout=true', { replace: true })).catch(e => setError(e.message)); }, [loading, user]);
   if (!loading && !user) return <Navigate to="/login?loggedout=true" replace/>;
   return error ? <div className="alert alert-danger" role="alert">{error}</div> : null;
 }

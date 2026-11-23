@@ -5,6 +5,7 @@ import Streak, { practice } from './Streak';
 import { AuthForm, afterLoginPath } from './Auth';
 import { api } from '../api';
 import { srtTime, toSrt } from './Dhwani';
+import OriginalMarkup, { isAppPath } from '../original/OriginalMarkup';
 vi.mock('../auth', () => ({ useAuth: () => ({ user: null, accept: vi.fn() }) }));
 vi.mock('../api', () => ({ api: vi.fn() }));
 const wrap = component => render(<MemoryRouter>{component}</MemoryRouter>);
@@ -66,6 +67,27 @@ describe('post-login redirect', () => {
       expect(afterLoginPath(bad, 'user')).toBe('/');
       expect(afterLoginPath(bad, 'admin')).toBe('/admin');
     }
+  });
+});
+
+describe('client-side navigation', () => {
+  it('turns same-app links into router links and leaves external, asset and download links alone', () => {
+    const html = '<a href="/blog" class="x">blog</a><a href="https://github.com/imradhe">gh</a><a href="/assets/docs/ImRadheResume.pdf">cv</a><a href="/files/a.pdf" download>dl</a>';
+    const { container } = wrap(<OriginalMarkup html={html}/>);
+    const links = [...container.querySelectorAll('a')];
+    expect(links[0].getAttribute('href')).toBe('/blog');
+    expect(links[0].className).toBe('x');
+    expect(links[1].getAttribute('href')).toBe('https://github.com/imradhe');
+    expect(links[2].getAttribute('href')).toBe('/assets/docs/ImRadheResume.pdf');
+  });
+  it('classifies app paths correctly', () => {
+    expect(isAppPath('/admin/stories')).toBe(true);
+    expect(isAppPath('/scene/short-stories-1-1-1')).toBe(true);
+    expect(isAppPath('/assets/img/a.jpg')).toBe(false);
+    expect(isAppPath('/api/auth/me')).toBe(false);
+    expect(isAppPath('//evil.example')).toBe(false);
+    expect(isAppPath('https://imradhe.com')).toBe(false);
+    expect(isAppPath('/doc.pdf?x=1')).toBe(false);
   });
 });
 
