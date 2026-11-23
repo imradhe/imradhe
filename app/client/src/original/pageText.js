@@ -4,7 +4,7 @@ const escapeText = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&
 const inline = value => escapeText(value).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 export const labelledPages = ['skills', 'interests'];
 export const pageHelp = {
-  about: 'Blank line starts a new paragraph. A line starting with "> " is the quote at the top. A line that says exactly [more] starts the Read More part. **text** is bold. The Download Resume button is added automatically.',
+  about: 'Blank line starts a new paragraph. A line starting with "> " is the quote at the top. A line that says exactly [more] starts the Read More part. **text** is bold. The download buttons (Resume and CV) and contact details are added automatically.',
   skills: 'Each block is one group: the first line is the heading, the next line is its text. Leave a blank line between groups. **text** is bold.',
   interests: 'Each block is one group: the first line is the heading, the next line is its text. Leave a blank line between groups. **text** is bold.'
 };
@@ -29,7 +29,6 @@ export function pageToHtml(key, text) {
   let html = join(visible);
   if (key === 'about') {
     if (hidden.length) html += `<span class="collapse" id="expand"><br><br>${join(hidden)}</span> <a style="cursor:pointer; text-decoration:underline;" data-bs-toggle="collapse" data-bs-target="#expand"><span onclick="this.style.display='none'">Read More</span></a>`;
-    html += '<div class="text-center mt-3 mb-5 pb-5"><a target="_blank" href="/assets/docs/ImRadheResume.pdf" class="btn btn-dark"><i class="bi bi-download"></i> Download Resume</a></div>';
   }
   return html;
 }

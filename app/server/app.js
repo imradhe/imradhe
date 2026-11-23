@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { databaseReady } from './database.js';
 import { config } from './config.js';
-import { Story, Scene, Post, User, Log, Flag, Entry, Page, Profile, genres } from './models.js';
+import { Story, Scene, Post, User, Log, Flag, Entry, Page, Profile, Document, genres } from './models.js';
 import { schemas, validateEntry, validateProfile, cleanPageText, pageKeys, pageText, publicPortfolio, defaultContact } from './portfolio.js';
 import { hashPassword, verifyPassword, startSession, requireUser, requireAdmin, requireCsrf, publicUser, endSession } from './auth.js';
 import { cleanHtml, postJson, legacyRoutes, staticPages, validSlug } from './content.js';
@@ -45,7 +45,8 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
       const origin = req.get('origin');
       const allowed = [new URL(settings.appUrl).origin, ...(settings.production ? [] : ['http://localhost:5173', 'http://127.0.0.1:5173'])];
       if ((origin && !allowed.includes(origin)) || req.get('sec-fetch-site') === 'cross-site') return res.status(403).json({ message: 'Cross-site request rejected.' });
-      if (!req.is('application/json')) return res.status(415).json({ message: 'Send application/json.' });
+      const pdfUpload = req.is('application/pdf') && /^\/admin\/documents\/(cv|resume)$/.test(req.path);
+      if (!req.is('application/json') && !pdfUpload) return res.status(415).json({ message: 'Send application/json.' });
     }
     next();
   });
@@ -124,7 +125,7 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
   for (const [name, Model, id, fields] of [
     ['stories', Story, 'storyID', ['storyID', 'title', 'author', 'genre', 'cover', 'description', 'tags']],
     ['scenes', Scene, 'sceneID', ['title', 'storyID', 'actNumber', 'chapterNumber', 'sceneNumber', 'content']],
-    ['posts', Post, 'slug', ['slug', 'title', 'description', 'date', 'tags', 'draft', 'body']]
+    ['posts', Post, 'slug', ['slug', 'title', 'description', 'date', 'tags', 'draft', 'highlight', 'body']]
   ]) {
     app.get(`/api/admin/${name}`, ...admin, async (_req, res) => res.json(await Model.find().sort({ createdDate: -1 }).lean()));
     app.get(`/api/admin/${name}/:slug`, ...admin, async (req, res) => {
@@ -152,17 +153,22 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
         }
         if (typeof data.content === 'string') data.content = cleanHtml(data.content);
       }
+      if (name === 'posts' && 'highlight' in data) data.highlight = data.highlight === true || data.highlight === 'true' || data.highlight === 'on';
       if (update && name !== 'scenes') delete data[id];
       return data;
     }
     app.post(`/api/admin/${name}`, ...mutation, async (req, res) => {
       const data = await validateData(req, res, false); if (!data) return;
-      res.status(201).json(await Model.create(data));
+      const item = await Model.create(data);
+      if (name === 'posts' && item.highlight && !item.draft) await Post.updateMany({ slug: { $ne: item.slug } }, { $set: { highlight: false } });
+      res.status(201).json(item);
     });
     app.put(`/api/admin/${name}/:slug`, ...mutation, async (req, res) => {
       const data = await validateData(req, res, true); if (!data) return;
       const item = await Model.findOneAndUpdate({ [id]: req.params.slug }, { $set: data }, { new: true, runValidators: true });
       if (!item) return res.status(404).json({ message: 'Record not found.' });
+      // Only one published post can be the home-page highlight; choosing one clears the others. A draft waits until it is published.
+      if (name === 'posts' && item.highlight && !item.draft) await Post.updateMany({ slug: { $ne: item.slug } }, { $set: { highlight: false } });
       res.json(item);
     });
     app.delete(`/api/admin/${name}/:slug`, ...mutation, async (req, res) => {
@@ -202,6 +208,24 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
     const result = await Entry.findByIdAndDelete(req.params.id).catch(() => null);
     if (!result) return res.status(404).json({ message: 'Record not found.' });
     res.json({ message: 'Deleted.' });
+  });
+  // CV and Resume PDFs. Uploads are raw PDF bytes (checked for the %PDF header and a 10 MB limit).
+  app.get('/api/admin/documents', ...admin, async (_req, res) => {
+    const stored = Object.fromEntries((await Document.find({}, { data: 0 }).lean()).map(d => [d.key, d]));
+    res.json(['cv', 'resume'].map(key => ({ key, uploaded: Boolean(stored[key]), filename: stored[key]?.filename || '', size: stored[key]?.size || 0, updatedAt: stored[key]?.updatedAt || null })));
+  });
+  app.put('/api/admin/documents/:key', ...mutation, express.raw({ type: 'application/pdf', limit: '10mb' }), async (req, res) => {
+    if (!['cv', 'resume'].includes(req.params.key)) return res.status(404).json({ message: 'Unknown document.' });
+    const data = req.body;
+    if (!Buffer.isBuffer(data) || data.length < 100 || data.subarray(0, 5).toString('latin1') !== '%PDF-') return res.status(400).json({ message: 'Upload a PDF file (up to 10 MB).' });
+    const filename = `${req.params.key === 'cv' ? 'Radhe-Shyam-CV' : 'Radhe-Shyam-Resume'}.pdf`;
+    await Document.findOneAndUpdate({ key: req.params.key }, { $set: { filename, size: data.length, data } }, { upsert: true });
+    res.json({ key: req.params.key, filename, size: data.length });
+  });
+  app.delete('/api/admin/documents/:key', ...mutation, async (req, res) => {
+    if (!['cv', 'resume'].includes(req.params.key)) return res.status(404).json({ message: 'Unknown document.' });
+    await Document.deleteOne({ key: req.params.key });
+    res.json({ message: 'Removed.' });
   });
   app.get('/api/admin/pages', ...admin, async (_req, res) => {
     const stored = Object.fromEntries((await Page.find().lean()).map(p => [p.key, p]));
@@ -243,6 +267,12 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
       res.json(envelope(await Flag.find({ [role]: req.params.email }).limit(1000).lean()));
     });
   }
+  // Latest article for the home page: the post the owner highlighted, or else the newest published post.
+  app.get('/api/home/articles', async (_req, res) => {
+    if (!databaseReady()) return res.json({ article: null });
+    const article = await Post.findOne({ ...published, highlight: true }).sort({ date: -1 }).lean() || await Post.findOne(published).sort({ date: -1, slug: 1 }).lean();
+    res.json({ article: article ? postJson(article, false) : null });
+  });
   app.use('/api', (_req, res) => res.status(404).json({ message: 'API route not found.' }));
   app.get(['/aibro', '/adcast'], (req, res) => { const name = req.path.slice(1); res.redirect(302, `https://${name}.imradhe.com/${name}`); });
   app.use((req, res, next) => {
@@ -254,6 +284,16 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
   app.use(['/experiments', '/test'], helmet.contentSecurityPolicy({ directives: { defaultSrc: ["'self'", 'https:', 'blob:', 'data:'], scriptSrc: ["'self'", 'https://smruthi.in', 'https://cdn.ckeditor.com', 'https://stackpath.bootstrapcdn.com', 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com', 'https://cdn.datatables.net', 'https://unpkg.com', 'https://aframe.io', 'https://raw.githack.com', "'unsafe-eval'"], styleSrc: ["'self'", "'unsafe-inline'"], objectSrc: ["'none'"], upgradeInsecureRequests: settings.production ? [] : null } }));
   app.use(express.static(settings.publicDir, { index: false, dotfiles: 'deny' }));
   app.use(express.static(settings.distDir, { index: false, dotfiles: 'deny' }));
+  // Public download of the CV and Resume. The Resume falls back to the bundled file until one is uploaded.
+  app.get('/files/:key.pdf', async (req, res) => {
+    const key = req.params.key;
+    if (!['cv', 'resume'].includes(key)) return res.status(404).type('text').send('Not found');
+    const stored = databaseReady() ? await Document.findOne({ key }).lean() : null;
+    res.set('Cache-Control', 'public, max-age=300');
+    if (stored) { res.attachment(stored.filename); res.setHeader('Content-Type', 'application/pdf'); return res.send(Buffer.from(stored.data.buffer)); }
+    if (key === 'resume') return res.attachment('Radhe-Shyam-Resume.pdf').sendFile(path.join(settings.publicDir, 'assets/docs/ImRadheResume.pdf'));
+    res.status(404).type('text').send('Not found');
+  });
   app.get('/sitemap.xml', async (_req, res) => {
     let pages = ['/', '/education', '/skills', '/projects', '/experience', '/interests', '/publications', '/blog', '/stories'];
     if (databaseReady()) {

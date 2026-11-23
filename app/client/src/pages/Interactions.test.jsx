@@ -101,7 +101,6 @@ describe('text pages', () => {
     expect(html.startsWith('<blockquote class="text-center"><strong><q>Quote here</q></strong></blockquote><strong>Bold</strong> text &lt;img')).toBe(true);
     expect(html).toContain('<span class="collapse" id="expand"><br><br>Hidden part</span>');
     expect(html).toContain('data-bs-target="#expand"');
-    expect(html).toContain('Download Resume');
     expect(html).not.toContain('<img');
     expect(html).toContain('&lt;img');
   });

@@ -69,6 +69,26 @@ export function AdminEntryEditor() {
   return <AdminLayout><main className="col-md-9 ms-sm-auto col-lg-10 px-md-4"><h1 className="h2 pt-3">{editing ? 'Edit' : 'New'} {section.label.replace(/s$/, '')}</h1>{error && <p className="text-danger" role="alert">{error}</p>}<form onSubmit={save} className="mb-5">{section.fields.map(([key, label, required]) => <div className="mb-3" key={key}><label className="form-label" htmlFor={key}>{label}</label>{section.fields.find(f => f[0] === key)[2] === 'textarea' ? <textarea id={key} className="form-control" rows={4} value={values[key]} onChange={e => setValues({ ...values, [key]: e.target.value })}/> : <input id={key} className="form-control" value={values[key]} required={Boolean(required)} onChange={e => setValues({ ...values, [key]: e.target.value })}/>}</div>)}<div className="d-flex gap-2"><Link className="btn btn-secondary" to={`/admin/entries/${kind}`}>Back</Link><button className="btn btn-primary" type="submit" disabled={busy}>{editing ? 'Update' : 'Add'}</button></div></form></main></AdminLayout>;
 }
 
+export function AdminDocuments() {
+  const resource = useResource('/admin/documents');
+  const [error, setError] = useState(''); const [message, setMessage] = useState(''); const [busy, setBusy] = useState('');
+  const labels = { cv: 'CV', resume: 'Resume' };
+  async function upload(key, file) {
+    if (!file) return;
+    if (file.type !== 'application/pdf' || file.size > 10 * 1024 * 1024) { setError('Choose a PDF file up to 10 MB.'); return; }
+    setBusy(key); setError(''); setMessage('');
+    try { await api(`/admin/documents/${key}`, { method: 'PUT', raw: { type: 'application/pdf', body: file } }); setMessage(`${labels[key]} updated.`); resource.reload(); }
+    catch (e) { setError(e.message); } finally { setBusy(''); }
+  }
+  async function remove(key) {
+    if (!window.confirm(`Remove the uploaded ${labels[key]}? ${key === 'resume' ? 'The bundled Resume will be used again.' : 'The CV download will be hidden.'}`)) return;
+    setBusy(key); setError(''); setMessage('');
+    try { await api(`/admin/documents/${key}`, { method: 'DELETE', body: {} }); setMessage(`${labels[key]} removed.`); resource.reload(); }
+    catch (e) { setError(e.message); } finally { setBusy(''); }
+  }
+  return <AdminLayout><main className="col-md-9 ms-sm-auto col-lg-10 px-md-4"><h1 className="h2 pt-3">CV and Resume</h1><p className="text-muted small">Upload a PDF (up to 10 MB). The public site links to it as a download. Uploading again replaces the file.</p>{error && <p className="text-danger" role="alert">{error}</p>}{message && <p className="text-success" role="status">{message}</p>}{(resource.data || []).map(doc => <div className="card mb-4" key={doc.key}><div className="card-body"><h2 className="h5">{labels[doc.key]}</h2><p className="small mb-3">{doc.uploaded ? <>Uploaded: {doc.filename} ({Math.round(doc.size / 1024)} KB){doc.updatedAt ? `, ${new Date(doc.updatedAt).toLocaleDateString()}` : ''}</> : doc.key === 'resume' ? 'Using the bundled Resume file.' : 'Not uploaded. The CV download is hidden on the site.'}</p><div className="d-flex flex-wrap gap-2 align-items-center"><a className="btn btn-outline-secondary btn-sm" href={`/files/${doc.key}.pdf`} target="_blank" rel="noopener">View current</a><label className={`btn btn-primary btn-sm mb-0 ${busy ? 'disabled' : ''}`}>{busy === doc.key ? 'Uploading…' : 'Upload PDF'}<input type="file" accept="application/pdf" className="d-none" disabled={Boolean(busy)} onChange={event => { upload(doc.key, event.target.files[0]); event.target.value = ''; }}/></label>{doc.uploaded && <button className="btn btn-outline-danger btn-sm" disabled={Boolean(busy)} onClick={() => remove(doc.key)}>Remove upload</button>}</div></div></div>)}</main></AdminLayout>;
+}
+
 export function AdminProfile() {
   const resource = useResource('/admin/profile');
   const [form, setForm] = useState(null); const [message, setMessage] = useState(''); const [error, setError] = useState('');

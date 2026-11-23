@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { marked } from 'marked';
 import { useResource } from '../hooks';
 import OriginalMarkup, { escapeHtml } from '../original/OriginalMarkup';
@@ -23,6 +23,14 @@ function Timeline({ section, data }) {
   for (const role of data) (companies[role.company] ||= []).push(role);
   return <div className="timeline experiences mb-5 pb-5">{Object.entries(companies).map(([company, roles]) => <div className="timeline-item position-relative mb-5" key={company}><div className="timeline-dot"/><div className="timeline-content ms-4"><h4 className="company fw-bold mb-1">{company}{roles.some(role => role.end.toLowerCase() === 'present') && <span className="badge bg-dark text-light rounded ms-2">Current</span>}</h4>{[...roles].sort((a, b) => new Date(b.start) - new Date(a.start)).map((role, i) => <div className="role-block mb-3" key={i}><h6 className="mb-1">{role.start} - {capitalize(role.end)}</h6><h5 className="fw-bolder mb-1">{role.position}</h5><div className="mb-2"><OriginalMarkup html={marked.parse(role.description)}/></div></div>)}</div></div>)}</div>;
 }
+function Downloads({ documents }) {
+  return <div className="text-center mt-3 mb-4 d-flex flex-wrap justify-content-center gap-2"><a target="_blank" rel="noopener" href="/files/resume.pdf" className="btn btn-dark"><i className="bi bi-download"/> Download Resume</a>{documents?.cv && <a target="_blank" rel="noopener" href="/files/cv.pdf" className="btn btn-outline-dark"><i className="bi bi-download"/> Download CV</a>}</div>;
+}
+function LatestArticle({ article }) {
+  if (!article) return null;
+  const date = article.date ? new Date(article.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  return <section className="mt-5 mb-4"><h5 className="fw-bold mb-3">Latest Articles from Radhe</h5><Link to={`/blog/${article.slug}`} className="text-decoration-none text-dark d-block card border-0 shadow-sm p-3"><div className="fw-bold fs-5">{article.title}</div>{date && <div className="small text-muted">{date}</div>}{article.description && <p className="mb-0 mt-2">{article.description}</p>}</Link><div className="mt-2"><Link to="/blog" className="text-decoration-none small">All articles →</Link></div></section>;
+}
 function Contact({ contact }) {
   if (!contact || !(contact.academicEmail || contact.personalEmail || contact.phone)) return null;
   return <div className="text-center mt-4 mb-5 pb-5"><h5 className="fw-bold mb-3">Contact</h5>{contact.academicEmail && <div className="mb-1"><i className="bi bi-envelope me-2"/><a href={`mailto:${contact.academicEmail}`}>{contact.academicEmail}</a> <span className="text-muted small">(academic)</span></div>}{contact.personalEmail && <div className="mb-1"><i className="bi bi-envelope-at me-2"/><a href={`mailto:${contact.personalEmail}`}>{contact.personalEmail}</a> <span className="text-muted small">(professional)</span></div>}{contact.phone && <div><i className="bi bi-telephone me-2"/><a href={`tel:${contact.phone.replace(/[^+0-9]/g, '')}`}>{contact.phone}</a></div>}</div>;
@@ -34,6 +42,7 @@ export default function Portfolio() {
   const { pathname } = useLocation();
   const section = pathname.slice(1) || 'about';
   const resource = useResource('/portfolio');
+  const latest = useResource('/home/articles');
   const [name, setName] = useState('రాధే శ్యామ్ సాళోపంతుల​ ');
   const [readMore, setReadMore] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -65,7 +74,7 @@ export default function Portfolio() {
   }
   const pageKey = ['skills', 'interests'].includes(section) ? section : 'about';
   let content = <OriginalMarkup html={pageToHtml(pageKey, resource.data?.pages?.[pageKey] || '')} replace={aboutReplace}/>;
-  if (section === 'about') content = <>{content}<Contact contact={resource.data?.contact}/></>;
+  if (section === 'about') content = <>{content}<Downloads documents={resource.data?.documents}/><LatestArticle article={latest.data?.article}/><Contact contact={resource.data?.contact}/></>;
   if (section === 'publications') content = resource.data ? <Publications publications={resource.data.publications || []} scholar={resource.data.links?.scholar}/> : null;
   if (['education', 'experience', 'projects'].includes(section)) content = resource.data ? section === 'projects' ? <Projects projects={resource.data.projects}/> : <Timeline section={section} data={resource.data[section]}/> : resource.error ? <p className="text-danger" role="alert">{resource.error.message}</p> : null;
   return <OriginalMarkup html={template} replace={(node, render) => {

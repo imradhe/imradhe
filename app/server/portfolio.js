@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { root } from './config.js';
-import { Entry, Page, Profile, Entries } from './models.js';
+import { Entry, Page, Profile, Entries, Document } from './models.js';
 
 // Per-kind field rules. Only these keys are ever written, so requests cannot inject other fields.
 export const schemas = {
@@ -114,14 +114,15 @@ export async function publicPortfolio(databaseReady) {
   if (!databaseReady()) {
     const portfolio = await readJson('data/portfolio.json');
     const pages = Object.fromEntries(await Promise.all(pageKeys.map(async key => [key, await pageText(key)])));
-    return { education: portfolio.education, experience: portfolio.experience, projects: portfolio.projects, publications: [], pages, links: {}, contact: defaultContact };
+    return { documents: { cv: false }, education: portfolio.education, experience: portfolio.experience, projects: portfolio.projects, publications: [], pages, links: {}, contact: defaultContact };
   }
   const entries = await Entry.find().sort({ order: 1, createdDate: 1 }).lean();
   const of = kind => entries.filter(e => e.kind === kind).map(e => e.data);
   const stored = Object.fromEntries((await Page.find().lean()).map(p => [p.key, p.text]));
   const pages = Object.fromEntries(await Promise.all(pageKeys.map(async key => [key, stored[key] ?? await pageText(key)])));
   const profile = await Profile.findOne({ key: 'main' }).lean();
-  return { education: of('education'), experience: of('experience'), projects: of('project'), publications: of('publication'),
+  const documents = { cv: Boolean(await Document.exists({ key: 'cv' })) };
+  return { documents, education: of('education'), experience: of('experience'), projects: of('project'), publications: of('publication'),
     pages, links: profile?.links || {}, contact: profile?.contact && Object.keys(profile.contact).length ? profile.contact : defaultContact };
 }
 export { Entries };

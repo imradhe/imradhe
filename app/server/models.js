@@ -23,7 +23,12 @@ export const Scene = mongoose.model('Scene', new Schema({
 export const Post = mongoose.model('Post', new Schema({
   slug, title: text(), description: { type: String, maxlength: 10000, default: '' },
   date: { type: Date, default: Date.now }, tags: [{ type: String, maxlength: 100 }],
-  draft: { type: Boolean, default: false }, body: text(1000000)
+  draft: { type: Boolean, default: false }, highlight: { type: Boolean, default: false }, body: text(1000000)
+}, dates));
+// Downloadable PDFs (CV and Resume), uploaded from the admin panel.
+export const Document = mongoose.model('Document', new Schema({
+  key: { type: String, enum: ['cv', 'resume'], required: true, unique: true },
+  filename: String, size: Number, data: Buffer
 }, dates));
 export const Entries = ['education', 'experience', 'project', 'publication'];
 export const Entry = mongoose.model('Entry', new Schema({

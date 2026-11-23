@@ -10,7 +10,7 @@ import { AuthForm, Logout } from './pages/Auth';
 import { AdminHome, AdminList, AdminEditor } from './pages/Admin';
 import { SpeechToText, SpeechDemo, Call, ArchivedChat, MarkerDemo } from './pages/Experiments';
 import FormDemo from './pages/FormDemo';
-import { AdminEntries, AdminEntryEditor, AdminProfile, AdminPage } from './pages/AdminPortfolio';
+import { AdminEntries, AdminEntryEditor, AdminProfile, AdminPage, AdminDocuments } from './pages/AdminPortfolio';
 
 const AR = lazy(() => import('./pages/AR'));
 const Chess = lazy(() => import('./pages/Chess'));
@@ -35,6 +35,7 @@ createRoot(document.getElementById('root')).render(<><ErrorBoundary><BrowserRout
   <Route path="admin/entries/:kind/new" element={<AdminOnly><AdminEntryEditor/></AdminOnly>}/>
   <Route path="admin/entries/:kind/edit/:id" element={<AdminOnly><AdminEntryEditor/></AdminOnly>}/>
   <Route path="admin/profile" element={<AdminOnly><AdminProfile/></AdminOnly>}/>
+  <Route path="admin/documents" element={<AdminOnly><AdminDocuments/></AdminOnly>}/>
   <Route path="admin/pages/:key" element={<AdminOnly><AdminPage/></AdminOnly>}/>
   {['stories', 'scenes', 'posts'].flatMap(type => [
     <Route key={type} path={`admin/${type}`} element={<AdminOnly><AdminList type={type}/></AdminOnly>}/>,

@@ -9,7 +9,7 @@ import path from 'node:path';
 import { createApp } from '../app.js';
 import { connectDatabase } from '../database.js';
 import { config } from '../config.js';
-import { User, Story, Scene, Post, Flag, Session } from '../models.js';
+import { User, Story, Scene, Post, Flag, Session, Document } from '../models.js';
 import { seedContent } from '../scripts/seed.js';
 
 let mongo, app, admin, adminCsrf, member, memberCsrf, dist;
@@ -145,6 +145,40 @@ test('portfolio sections, publications, pages and profile links are validated, s
   await member.put('/api/admin/profile').set('x-csrf-token', memberCsrf).send({ links: {} }).expect(403);
   await admin.delete(`/api/admin/entries/${created.body._id}`).set('x-csrf-token', adminCsrf).send({}).expect(200);
   await admin.delete(`/api/admin/entries/${created.body._id}`).set('x-csrf-token', adminCsrf).send({}).expect(404);
+});
+
+test('CV and resume PDFs upload, download and remove; home article is the highlighted or newest published post', async () => {
+  const pdf = Buffer.concat([Buffer.from('%PDF-1.4\n'), Buffer.alloc(200, 65)]);
+  await admin.put('/api/admin/documents/cv').set('x-csrf-token', adminCsrf).set('Content-Type', 'application/pdf').send(Buffer.from('not a pdf at all, just text padded out to length'.repeat(4))).expect(400);
+  await admin.put('/api/admin/documents/cv').set('x-csrf-token', adminCsrf).set('Content-Type', 'application/pdf').send(pdf).expect(200);
+  await admin.put('/api/admin/documents/other').set('x-csrf-token', adminCsrf).set('Content-Type', 'application/pdf').send(pdf).expect(415);
+  await member.put('/api/admin/documents/cv').set('x-csrf-token', memberCsrf).set('Content-Type', 'application/pdf').send(pdf).expect(403);
+  const raw = (res, callback) => { const chunks = []; res.on('data', c => chunks.push(c)); res.on('end', () => callback(null, Buffer.concat(chunks))); };
+  const cv = await request(app).get('/files/cv.pdf').buffer(true).parse(raw).expect(200);
+  assert.match(cv.headers['content-type'], /^application\/pdf/); assert.match(cv.headers['content-disposition'], /attachment/); assert.ok(cv.body.equals(pdf), 'stored bytes come back unchanged');
+  const resume = await request(app).get('/files/resume.pdf').buffer(true).parse(raw).expect(200);
+  assert.ok(resume.body.length > 1000, 'bundled resume is the fallback');
+  await request(app).get('/files/notes.pdf').expect(404);
+  assert.equal((await request(app).get('/api/portfolio').expect(200)).body.documents.cv, true);
+  const posts = [
+    { slug: 'older-post', title: 'Older post', description: 'Old', date: '2198-01-01', tags: [], draft: false, body: 'Old body' },
+    { slug: 'newer-post', title: 'Newer post', description: 'New', date: '2199-01-01', tags: [], draft: false, body: 'New body' },
+    { slug: 'draft-post', title: 'Draft post', description: 'Draft', date: '2199-06-01', tags: [], draft: true, body: 'Draft body' }
+  ];
+  for (const post of posts) await admin.post('/api/admin/posts').set('x-csrf-token', adminCsrf).send(post).expect(201);
+  let home = (await request(app).get('/api/home/articles').expect(200)).body.article;
+  assert.equal(home.slug, 'newer-post', 'with nothing highlighted, the newest published post is shown');
+  await admin.put('/api/admin/posts/older-post').set('x-csrf-token', adminCsrf).send({ highlight: 'on' }).expect(200);
+  home = (await request(app).get('/api/home/articles').expect(200)).body.article;
+  assert.equal(home.slug, 'older-post', 'a highlighted post wins');
+  await admin.put('/api/admin/posts/draft-post').set('x-csrf-token', adminCsrf).send({ highlight: true }).expect(200);
+  assert.equal((await request(app).get('/api/home/articles').expect(200)).body.article.slug, 'older-post', 'a highlighted draft does not replace the published highlight');
+  await admin.put('/api/admin/posts/newer-post').set('x-csrf-token', adminCsrf).send({ highlight: true }).expect(200);
+  assert.equal(await Post.countDocuments({ highlight: true }), 1, 'only one post stays highlighted');
+  assert.equal((await request(app).get('/api/home/articles').expect(200)).body.article.slug, 'newer-post');
+  await admin.delete('/api/admin/documents/cv').set('x-csrf-token', adminCsrf).send({}).expect(200);
+  assert.equal((await request(app).get('/files/cv.pdf').expect(404)).status, 404);
+  for (const post of posts) await admin.delete(`/api/admin/posts/${post.slug}`).set('x-csrf-token', adminCsrf).send({}).expect(200);
 });
 
 test('flag endpoints preserve legacy envelopes and enforce ownership and admin aggregates', async () => {
