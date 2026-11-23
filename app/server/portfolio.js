@@ -57,16 +57,30 @@ export function validateEntry(kind, input, { update = false } = {}) {
 }
 
 export const linksText = links => Object.entries(links || {}).map(([label, url]) => `${label} | ${url}`).join('\n');
+export const contactKeys = ['academicEmail', 'personalEmail', 'phone'];
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const validateProfile = input => {
   const source = input && typeof input === 'object' ? input : {};
   const links = {};
   for (const key of profileKeys) {
-    const value = String(source[key] ?? '').trim();
+    const value = String(source.links?.[key] ?? source[key] ?? '').trim();
     if (value && !safeLink(value)) return { error: `${key} must be an http(s) link.` };
     if (value) links[key] = value;
   }
-  return { links };
+  const contact = {};
+  const incoming = source.contact && typeof source.contact === 'object' ? source.contact : {};
+  for (const key of ['academicEmail', 'personalEmail']) {
+    const value = String(incoming[key] ?? '').trim();
+    if (value && (value.length > 254 || !emailPattern.test(value))) return { error: `${key === 'academicEmail' ? 'Academic' : 'Personal'} email is not a valid address.` };
+    if (value) contact[key] = value;
+  }
+  const phone = String(incoming.phone ?? '').trim();
+  if (phone && !/^\+?[0-9][0-9 ()-]{5,22}$/.test(phone)) return { error: 'Phone must be digits, optionally starting with +, spaces, brackets or hyphens.' };
+  if (phone) contact.phone = phone;
+  return { links, contact };
 };
+// Initial contact details, applied only where none are stored yet (never overwrites admin edits).
+export const defaultContact = { academicEmail: 'radheshyam.s@research.iiit.ac.in', personalEmail: 'contact@imradhe.com', phone: '+91 9121325466' };
 
 const readJson = async file => JSON.parse(await readFile(`${root}/${file}`, 'utf8'));
 // First-run import only: existing records are never overwritten, so admin edits survive re-seeding.
@@ -87,6 +101,7 @@ export async function seedPortfolio() {
   }
   if (!(await Profile.exists({ key: 'main' }))) await Profile.create({ key: 'main', links: {
     linkedin: 'https://linkedin.com/in/imradhe', github: 'https://github.com/imradhe', instagram: 'https://instagram.com/imraadhe', twitter: 'https://twitter.com/imraadhe' } });
+  await Profile.updateOne({ key: 'main', contact: { $in: [null, {}] } }, { $set: { contact: defaultContact } });
   return counts;
 }
 
@@ -99,7 +114,7 @@ export async function publicPortfolio(databaseReady) {
   if (!databaseReady()) {
     const portfolio = await readJson('data/portfolio.json');
     const pages = Object.fromEntries(await Promise.all(pageKeys.map(async key => [key, await pageText(key)])));
-    return { education: portfolio.education, experience: portfolio.experience, projects: portfolio.projects, publications: [], pages, links: {} };
+    return { education: portfolio.education, experience: portfolio.experience, projects: portfolio.projects, publications: [], pages, links: {}, contact: defaultContact };
   }
   const entries = await Entry.find().sort({ order: 1, createdDate: 1 }).lean();
   const of = kind => entries.filter(e => e.kind === kind).map(e => e.data);
@@ -107,6 +122,6 @@ export async function publicPortfolio(databaseReady) {
   const pages = Object.fromEntries(await Promise.all(pageKeys.map(async key => [key, stored[key] ?? await pageText(key)])));
   const profile = await Profile.findOne({ key: 'main' }).lean();
   return { education: of('education'), experience: of('experience'), projects: of('project'), publications: of('publication'),
-    pages, links: profile?.links || {} };
+    pages, links: profile?.links || {}, contact: profile?.contact && Object.keys(profile.contact).length ? profile.contact : defaultContact };
 }
 export { Entries };

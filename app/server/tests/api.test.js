@@ -134,6 +134,10 @@ test('portfolio sections, publications, pages and profile links are validated, s
   await admin.put('/api/admin/pages/nothing').set('x-csrf-token', adminCsrf).send({ text: 'x' }).expect(404);
   await admin.put('/api/admin/profile').set('x-csrf-token', adminCsrf).send({ links: { scholar: 'https://scholar.google.com/citations?user=abc', evil: 'https://x.org' } }).expect(200);
   await admin.put('/api/admin/profile').set('x-csrf-token', adminCsrf).send({ links: { scholar: 'javascript:alert(1)' } }).expect(400);
+  await admin.put('/api/admin/profile').set('x-csrf-token', adminCsrf).send({ links: {}, contact: { academicEmail: 'not-an-email' } }).expect(400);
+  await admin.put('/api/admin/profile').set('x-csrf-token', adminCsrf).send({ links: {}, contact: { phone: 'call me <script>' } }).expect(400);
+  await admin.put('/api/admin/profile').set('x-csrf-token', adminCsrf).send({ links: { scholar: 'https://scholar.google.com/citations?user=abc' }, contact: { academicEmail: 'radheshyam.s@research.iiit.ac.in', personalEmail: 'contact@imradhe.com', phone: '+91 9121325466' } }).expect(200);
+  assert.equal((await request(app).get('/api/portfolio').expect(200)).body.contact.phone, '+91 9121325466');
   const portfolio = (await request(app).get('/api/portfolio').expect(200)).body;
   assert.equal(portfolio.publications[0].title, 'Renamed publication'); assert.equal(portfolio.links.scholar, 'https://scholar.google.com/citations?user=abc');
   assert.equal(portfolio.links.evil, undefined); assert.ok(portfolio.education.length >= 1); assert.ok(portfolio.pages.about.startsWith('Hi'));

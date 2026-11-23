@@ -37,7 +37,8 @@ export const Page = mongoose.model('Page', new Schema({
 }, dates));
 export const Profile = mongoose.model('Profile', new Schema({
   key: { type: String, default: 'main', unique: true },
-  links: { type: Schema.Types.Mixed, default: {} }
+  links: { type: Schema.Types.Mixed, default: {} },
+  contact: { type: Schema.Types.Mixed, default: {} }
 }, dates));
 export const User = mongoose.model('User', new Schema({
   name: text(100), phone: { type: String, maxlength: 30, default: '' }, email: { ...text(254), lowercase: true, unique: true },

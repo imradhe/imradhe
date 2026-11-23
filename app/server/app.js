@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 import { databaseReady } from './database.js';
 import { config } from './config.js';
 import { Story, Scene, Post, User, Log, Flag, Entry, Page, Profile, genres } from './models.js';
-import { schemas, validateEntry, validateProfile, cleanPageText, pageKeys, pageText, publicPortfolio } from './portfolio.js';
+import { schemas, validateEntry, validateProfile, cleanPageText, pageKeys, pageText, publicPortfolio, defaultContact } from './portfolio.js';
 import { hashPassword, verifyPassword, startSession, requireUser, requireAdmin, requireCsrf, publicUser, endSession } from './auth.js';
 import { cleanHtml, postJson, legacyRoutes, staticPages, validSlug } from './content.js';
 
@@ -214,11 +214,15 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
     if (text.length > 20000) return res.status(400).json({ message: 'Page is too long (20,000 characters maximum).' });
     res.json(await Page.findOneAndUpdate({ key: req.params.key }, { $set: { text } }, { upsert: true, new: true }));
   });
-  app.get('/api/admin/profile', ...admin, async (_req, res) => res.json((await Profile.findOne({ key: 'main' }).lean()) || { links: {} }));
+  app.get('/api/admin/profile', ...admin, async (_req, res) => {
+    const profile = await Profile.findOne({ key: 'main' }).lean();
+    res.json({ links: profile?.links || {}, contact: profile?.contact && Object.keys(profile.contact).length ? profile.contact : defaultContact });
+  });
   app.put('/api/admin/profile', ...mutation, async (req, res) => {
-    const { links, error } = validateProfile(req.body?.links ?? req.body);
+    const { links, contact, error } = validateProfile(req.body);
     if (error) return res.status(400).json({ message: error });
-    res.json(await Profile.findOneAndUpdate({ key: 'main' }, { $set: { links } }, { upsert: true, new: true }));
+    const saved = await Profile.findOneAndUpdate({ key: 'main' }, { $set: { links, contact } }, { upsert: true, new: true }).lean();
+    res.json({ links: saved.links, contact: saved.contact });
   });
   app.get('/api/logs', ...admin, async (_req, res) => res.json(envelope(await Log.find().select('-loginID').sort({ createdAt: -1 }).limit(500).lean())));
   app.post('/api/flag', requireUser, requireCsrf, async (req, res) => {

@@ -71,15 +71,16 @@ export function AdminEntryEditor() {
 
 export function AdminProfile() {
   const resource = useResource('/admin/profile');
-  const [links, setLinks] = useState(null); const [message, setMessage] = useState(''); const [error, setError] = useState('');
+  const [form, setForm] = useState(null); const [message, setMessage] = useState(''); const [error, setError] = useState('');
   const keys = [['scholar', 'Google Scholar'], ['linkedin', 'LinkedIn'], ['github', 'GitHub'], ['instagram', 'Instagram'], ['twitter', 'Twitter / X']];
-  useEffect(() => { if (resource.data && links === null) setLinks({ ...resource.data.links }); }, [resource.data, links]);
+  const contacts = [['academicEmail', 'Academic email', 'email'], ['personalEmail', 'Professional / personal email', 'email'], ['phone', 'Phone', 'tel']];
+  useEffect(() => { if (resource.data && form === null) setForm({ links: { ...resource.data.links }, contact: { ...resource.data.contact } }); }, [resource.data, form]);
   async function save(event) {
     event.preventDefault(); setError(''); setMessage('');
-    try { const saved = await api('/admin/profile', { method: 'PUT', body: { links } }); setLinks({ ...saved.links }); setMessage('Saved.'); }
+    try { const saved = await api('/admin/profile', { method: 'PUT', body: form }); setForm({ links: { ...saved.links }, contact: { ...saved.contact } }); setMessage('Saved.'); }
     catch (e) { setError(e.message); }
   }
-  return <AdminLayout><main className="col-md-9 ms-sm-auto col-lg-10 px-md-4"><h1 className="h2 pt-3">Profile links</h1>{error && <p className="text-danger" role="alert">{error}</p>}{message && <p className="text-success" role="status">{message}</p>}{links && <form onSubmit={save} className="mb-5">{keys.map(([key, label]) => <div className="mb-3" key={key}><label className="form-label" htmlFor={key}>{label}</label><input id={key} type="url" className="form-control" placeholder="https://" value={links[key] || ''} onChange={e => setLinks({ ...links, [key]: e.target.value })}/></div>)}<button className="btn btn-primary" type="submit">Save</button></form>}</main></AdminLayout>;
+  return <AdminLayout><main className="col-md-9 ms-sm-auto col-lg-10 px-md-4"><h1 className="h2 pt-3">Profile</h1>{error && <p className="text-danger" role="alert">{error}</p>}{message && <p className="text-success" role="status">{message}</p>}{form && <form onSubmit={save} className="mb-5"><h2 className="h5 mt-4">Contact</h2>{contacts.map(([key, label, type]) => <div className="mb-3" key={key}><label className="form-label" htmlFor={key}>{label}</label><input id={key} type={type} className="form-control" value={form.contact[key] || ''} onChange={e => setForm({ ...form, contact: { ...form.contact, [key]: e.target.value } })}/></div>)}<h2 className="h5 mt-4">Links</h2>{keys.map(([key, label]) => <div className="mb-3" key={key}><label className="form-label" htmlFor={key}>{label}</label><input id={key} type="url" className="form-control" placeholder="https://" value={form.links[key] || ''} onChange={e => setForm({ ...form, links: { ...form.links, [key]: e.target.value } })}/></div>)}<button className="btn btn-primary" type="submit">Save</button></form>}</main></AdminLayout>;
 }
 
 export function AdminPage() {

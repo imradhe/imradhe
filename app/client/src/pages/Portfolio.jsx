@@ -23,6 +23,10 @@ function Timeline({ section, data }) {
   for (const role of data) (companies[role.company] ||= []).push(role);
   return <div className="timeline experiences mb-5 pb-5">{Object.entries(companies).map(([company, roles]) => <div className="timeline-item position-relative mb-5" key={company}><div className="timeline-dot"/><div className="timeline-content ms-4"><h4 className="company fw-bold mb-1">{company}{roles.some(role => role.end.toLowerCase() === 'present') && <span className="badge bg-dark text-light rounded ms-2">Current</span>}</h4>{[...roles].sort((a, b) => new Date(b.start) - new Date(a.start)).map((role, i) => <div className="role-block mb-3" key={i}><h6 className="mb-1">{role.start} - {capitalize(role.end)}</h6><h5 className="fw-bolder mb-1">{role.position}</h5><div className="mb-2"><OriginalMarkup html={marked.parse(role.description)}/></div></div>)}</div></div>)}</div>;
 }
+function Contact({ contact }) {
+  if (!contact || !(contact.academicEmail || contact.personalEmail || contact.phone)) return null;
+  return <div className="text-center mt-4 mb-5 pb-5"><h5 className="fw-bold mb-3">Contact</h5>{contact.academicEmail && <div className="mb-1"><i className="bi bi-envelope me-2"/><a href={`mailto:${contact.academicEmail}`}>{contact.academicEmail}</a> <span className="text-muted small">(academic)</span></div>}{contact.personalEmail && <div className="mb-1"><i className="bi bi-envelope-at me-2"/><a href={`mailto:${contact.personalEmail}`}>{contact.personalEmail}</a> <span className="text-muted small">(professional)</span></div>}{contact.phone && <div><i className="bi bi-telephone me-2"/><a href={`tel:${contact.phone.replace(/[^+0-9]/g, '')}`}>{contact.phone}</a></div>}</div>;
+}
 function Publications({ publications, scholar }) {
   return <div className="publications mb-5 pb-5">{publications.length === 0 && <p className="text-muted">Publications will appear here.</p>}{publications.map((item, index) => <div className="mb-4 ps-3 border-start border-4" key={index}><div className="fw-bold">{item.url ? <a href={item.url} target="_blank" rel="noopener" className="text-dark text-decoration-none">{item.title}</a> : item.title}</div>{item.authors && <div className="small text-muted">{item.authors}</div>}<div className="small">{[item.venue, item.year].filter(Boolean).join(', ')}</div>{item.description && <p className="mb-0 mt-1">{item.description}</p>}</div>)}{scholar && <p className="mt-4"><a href={scholar} target="_blank" rel="noopener" className="text-decoration-none"><i className="bi bi-mortarboard me-1"/>View all publications on Google Scholar</a></p>}</div>;
 }
@@ -61,6 +65,7 @@ export default function Portfolio() {
   }
   const pageKey = ['skills', 'interests'].includes(section) ? section : 'about';
   let content = <OriginalMarkup html={pageToHtml(pageKey, resource.data?.pages?.[pageKey] || '')} replace={aboutReplace}/>;
+  if (section === 'about') content = <>{content}<Contact contact={resource.data?.contact}/></>;
   if (section === 'publications') content = resource.data ? <Publications publications={resource.data.publications || []} scholar={resource.data.links?.scholar}/> : null;
   if (['education', 'experience', 'projects'].includes(section)) content = resource.data ? section === 'projects' ? <Projects projects={resource.data.projects}/> : <Timeline section={section} data={resource.data[section]}/> : resource.error ? <p className="text-danger" role="alert">{resource.error.message}</p> : null;
   return <OriginalMarkup html={template} replace={(node, render) => {
