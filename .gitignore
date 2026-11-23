@@ -1,0 +1,10 @@
+.DS_Store
+_imradhe.com/
+*.zip
+/u881909133_*.sql
+**/node_modules/
+**/dist/
+**/coverage/
+**/.env
+**/.env.*
+!**/.env.example

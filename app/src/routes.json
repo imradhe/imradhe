@@ -1,0 +1,246 @@
+{
+    "" : { 
+        "path" : "views/index.php", 
+        "pattern" : null
+    },
+    "education" : { 
+        "path" : "views/index.php", 
+        "pattern" : null
+    },
+    "skills" : { 
+        "path" : "views/index.php", 
+        "pattern" : null
+    },
+    "projects" : { 
+        "path" : "views/index.php", 
+        "pattern" : null
+    },
+    "experience" : { 
+        "path" : "views/index.php", 
+        "pattern" : null
+    },
+    "interests" : { 
+        "path" : "views/index.php", 
+        "pattern" : null
+    },
+    "call" : {
+        "path" : "views/call.php", 
+        "pattern" : null
+    },
+
+    "health" : {
+        "path" : "views/health.php",
+        "pattern" : null
+    },
+    "blog" : {
+        "path" : "views/blog/index.php",
+        "pattern" : null
+    },
+    "blog/{slug}" : {
+        "path" : "views/blog/post.php",
+        "pattern" : null
+    },
+
+    
+    "deepseek-or-deepfake" : {
+        "path" : "views/deepseek-or-deepfake.php", 
+        "pattern" : null
+    },
+    
+    "wav2vec" : {
+        "path" : "views/wav2vec.php", 
+        "pattern" : null
+    },
+    "ar" : {
+        "path" : "views/ar/index.php", 
+        "pattern" : null
+    },
+    "ar/{model}" : {
+        "path" : "views/ar/models.php", 
+        "pattern" : []
+    },
+    "ar/test" : {
+        "path" : "views/ar/test.php", 
+        "pattern" : null
+    },
+    "ar/chotabheem" : {
+        "path" : "views/ar/chotabheem.php", 
+        "pattern" : null
+    },
+    "ar/ironman" : {
+        "path" : "views/ar/ironman.php", 
+        "pattern" : null
+    },
+    "ar/spiderman" : {
+        "path" : "views/ar/spiderman.php", 
+        "pattern" : null
+    },
+    "test" : {
+        "path" : "views/test.php", 
+        "pattern" : null
+    },
+    "testmail" : {
+        "path" : "views/testmail.php", 
+        "pattern" : null
+    },
+    "login" : {
+        "path" : "views/auth/login.php", 
+        "pattern" : null
+    },
+    "register" : {
+        "path" : "views/auth/register.php", 
+        "pattern" : null
+    },
+    "logout" : {
+        "path" : "views/auth/logout.php", 
+        "pattern" : null
+    },
+
+
+
+    "balloon" : {
+        "path" : "views/balloon.php",
+        "pattern" : null
+    },
+    "chess" : {
+        "path" : "views/chess.php",
+        "pattern" : null
+    },
+    "scene/{slug}" : {
+        "path" : "views/scene/index.php",
+        "pattern" : "/^[a-z0-9]+$/"
+    },
+    
+    
+    "streak" : {
+        "path" : "views/streakTracker/v1.php",
+        "pattern" : null
+    },
+
+
+    "streak/new" : {
+        "path" : "views/streakTracker/v2.php",
+        "pattern" : null
+    },
+
+    "admin" : {
+        "path" : "views/admin/index.php", 
+        "pattern" : null
+    },
+    
+    
+    "admin/stories" : {
+        "path" : "views/admin/stories/index.php", 
+        "pattern" : null
+    },
+        
+        "admin/stories/new" : {
+            "path" : "views/admin/stories/new.php", 
+            "pattern" : null
+        },
+    
+    "admin/stories/view" : {
+        "path" : "views/admin/stories/view.php", 
+        "pattern" : "/^[a-z0-9]+$/"
+    },
+    
+    "admin/stories/edit/{slug}" : {
+        "path" : "views/admin/stories/edit.php", 
+        "pattern" : "/^[a-z0-9]+$/"
+    },
+    
+    "admin/stories/delete/{slug}" : {
+        "path" : "views/admin/stories/delete.php", 
+        "pattern" : "/^[a-z0-9]+$/"
+    },
+    
+    
+    
+    "admin/scenes" : {
+            "path" : "views/admin/scenes/index.php", 
+            "pattern" : null
+        },
+        
+    "admin/scenes/new" : {
+            "path" : "views/admin/scenes/new.php", 
+            "pattern" : null
+        },
+        "admin/scenes/view" : {
+            "path" : "views/admin/scenes/view.php", 
+            "pattern" : "/^[a-z0-9]+$/"
+        },
+        
+        "admin/scenes/edit/{slug}" : {
+            "path" : "views/admin/scenes/edit.php", 
+            "pattern" : "/^[a-z0-9]+$/"
+        },
+        
+        "admin/scenes/delete/{slug}" : {
+            "path" : "views/admin/scenes/delete.php", 
+            "pattern" : "/^[a-z0-9]+$/"
+        },
+    
+
+    "api/example" : {
+        "path" : "views/api/example.php", 
+        "pattern" : null
+    },
+    "api/flag" : {
+        "path" : "views/api/flag.php", 
+        "pattern" : null
+    },
+    "api/flags" : {
+        "path" : "views/api/flags.php", 
+        "pattern" : null
+    },
+    "api/flags/annotator/{email}" : {
+        "path" : "views/api/annotator.php", 
+        "pattern" : "/^[a-z0-9]+$/"
+    },
+    "api/flags/reviewer/{email}" : {
+        "path" : "views/api/reviewer.php"
+    },
+    "api/flags/superchecker/{email}" : {
+        "path" : "views/api/superchecker.php", 
+        "pattern" : null
+    },
+    "api/flags/annotators" : {
+        "path" : "views/api/annotators.php", 
+        "pattern" : null
+    },
+    "api/flags/reviewers" : {
+        "path" : "views/api/reviewers.php", 
+        "pattern" : null
+    },
+    "api/flags/supercheckers" : {
+        "path" : "views/api/supercheckers.php", 
+        "pattern" : null
+    },
+    "api/logs" : {
+        "path" : "views/api/logs.php", 
+        "pattern" : null
+    },
+   "api/test" : {
+        "path" : "views/api/test.php", 
+        "pattern" : null
+    },
+    
+   "api/login" :{
+        "path" : "views/api/login.php", 
+        "pattern" : null
+    },
+    "api/logout" :{
+        "path" : "views/api/logout.php", 
+        "pattern" : null
+    },
+    "api/routes" :{
+        "path" : "views/api/routes.php", 
+        "pattern" : null
+    },
+    "AR" : {
+        "path" : "views/ar/index.php", 
+        "pattern" : null
+    }
+   
+
+}

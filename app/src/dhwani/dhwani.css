@@ -1,0 +1,34 @@
+body{
+  overflow-x: hidden;
+}
+#sync-container {
+    margin-top: 20px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 50vh;
+}
+#transcript{
+  height: 52vh;
+}
+.line .form-control{
+    height: max-content;
+}
+
+.line.active {
+    background-color: #f0f0f0; 
+    padding: 20px 0;
+  }
+  
+  .line input {
+    background-color: transparent; 
+    border: none;
+    outline: none;
+  }
+  
+audio{
+    width: 60vw;
+}
+
+.link{
+  cursor: pointer !important;
+}

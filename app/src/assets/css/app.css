@@ -1,0 +1,140 @@
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: #fff;
+  color: #000;
+}
+
+body * {
+  color: inherit;
+}
+
+.btn-theme {
+  position: fixed;
+  top: 50%;
+  left: -.2%;
+  padding-left: 20px;
+  border-radius: 0 50% 50% 0;
+}
+
+#header {
+  user-select: none !important;
+}
+
+img {
+  user-select: text !important;
+  pointer-events: none !important;
+}
+
+@media (min-width: 768px) {
+  .nav-pills {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* Make only active nav links black background and white text */
+#myTab .nav-link.active {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+#myTab .nav-link{
+    color: #000;
+}
+
+/* Optional: fallback bg utility classes if you still want to use them */
+.bg-black {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+.bg-white {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+/* Title sticky */
+.title {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+}
+
+/* Strong tags */
+b {
+  color: inherit;
+}
+
+/* Headings */
+h3 {
+  color: inherit;
+}
+
+/* Story links */
+.story {
+  text-decoration: none;
+}
+.story:hover,
+.story:focus,
+.story:active {
+  text-decoration: underline;
+}
+
+/* Blog styles */
+.blog-header {
+  border-bottom: 1px solid #e5e5e5;
+}
+.blog-header-logo {
+  font-size: 2.25rem;
+}
+.blog-header-logo:hover {
+  text-decoration: none;
+}
+.display-4 {
+  font-size: 2.5rem;
+}
+@media (min-width: 768px) {
+  .display-4 {
+    font-size: 3rem;
+  }
+}
+.flex-auto {
+  flex: 0 0 auto;
+}
+.h-250 {
+  height: 250px;
+}
+@media (min-width: 768px) {
+  .h-md-250 {
+    height: 250px;
+  }
+}
+.blog-pagination {
+  margin-bottom: 4rem;
+}
+.blog-post {
+  margin-bottom: 4rem;
+}
+.blog-post-title {
+  font-size: 2.5rem;
+}
+.blog-post-meta {
+  margin-bottom: 1.25rem;
+  color: #727272;
+}
+.blog-footer {
+  padding: 2.5rem 0;
+  color: #727272;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-top: .05rem solid #e5e5e5;
+}
+.blog-footer p:last-child {
+  margin-bottom: 0;
+}
+
+/* Transparent button hide utility */
+.display-none button {
+  color: transparent;
+  background: transparent;
+  border: transparent;
+  box-shadow: none;
+}

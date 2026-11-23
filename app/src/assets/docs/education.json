@@ -1,0 +1,23 @@
+[
+  {
+    "institution": "International Institute of Information Technology, Hyderabad",
+    "degree": "PhD in Computational Linguistics",
+    "start": "Jul 2025",
+    "end": "Present",
+    "description": "- Research in Speech and Language Technology with a focus on Indic languages and foundational models.\n- Exploring theoretical and applied aspects of language understanding, generation, and synthesis."
+  },
+  {
+    "institution": "Indian Institute of Technology, Madras",
+    "degree": "CS6370: Natural Language Processing by Prof. Sutanu Chakraborti",
+    "start": "Jan 2024",
+    "end": "May 2024",
+    "description": ""
+  },
+  {
+    "institution": "SCSVMV (Kanchi University)",
+    "degree": "B.Tech in Information Technology",
+    "start": "2019",
+    "end": "2023",
+    "description": "Graduated with strong focus on programming, software development, and product development."
+  }
+]

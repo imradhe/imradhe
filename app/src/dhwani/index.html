@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dhwani - Text & Audio Syncing</title>
+  <link rel="stylesheet" href="dhwani.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+    crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    @media (max-width: 991px) {
+      .container {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="alert alert-warning d-none" role="alert">
+    Please view this page on a larger screen
+  </div>
+  <div class="container mt-5">
+    <h1 class="text-center">Dhwani - Text & Audio Syncing</h1>
+    <div class="d-flex justify-content-center mt-5">
+      
+    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="pills-transcript-tab" data-bs-toggle="pill" data-bs-target="#pills-transcript" type="button" role="tab" aria-controls="pills-transcript" aria-selected="true">Transcribe</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pills-sync-tab" data-bs-toggle="pill" data-bs-target="#pills-sync" type="button" role="tab" aria-controls="pills-sync" aria-selected="true">Sync</button>
+      </li>
+    </ul>
+
+    </div>
+    <div class="tab-content" id="pills-tabContent">
+      <div class="tab-pane show active" id="pills-transcript" role="tabpanel" aria-labelledby="pills-transcript-tab" tabindex="0">
+        <textarea name="transcript" id="transcript" class="form-control" placeholder="Enter Transcript"></textarea>
+      </div>
+      <div class="tab-pane" id="pills-sync" role="tabpanel" aria-labelledby="pills-sync-tab" tabindex="0">
+        
+        <div class="float-end d-flex flex-column ms-2">
+          <button id="resetSync" class="btn btn-outline-secondary rounded-pill mb-3" title="Reset Sync"><i class="bi bi-eraser"></i></button>
+          <button id="download" class="btn btn-outline-secondary rounded-pill mb-3" onclick="download(lines)" title="Download"><i class="bi bi-cloud-arrow-down-fill"></i></button>
+        </div>
+        <div id="sync-container"></div>
+      </div>
+    </div>
+    <div class="text-center mt-4"><audio id="audio" controls></audio></div>
+    <div class="row d-flex justify-content-center">
+      <div class="col-auto">
+        <button class="btn btn-outline-primary rounded-circle" id="reset"><i class="bi bi-arrow-clockwise"></i></button>
+      </div>
+      <form class="col-8">
+        <input type="url" id="audio-url" class="form-control rounded-pill" placeholder="Enter audio URL" required>
+      </form>
+      <button onclick="loadAudio()" class="btn btn-primary rounded-pill col-auto">Load Audio</button>
+    </div>
+  </div>
+  <script src="dhwani.js"></script>
+  <script>
+    if (window.innerWidth <= 991) {
+      document.querySelector('.container').style.display = "none"
+      document.querySelector('.alert').classList.remove('d-none');
+    }
+  </script>
+</body>
+</html>

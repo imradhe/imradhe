@@ -1,0 +1,37 @@
+[
+  {
+    "company": "LTRC (Language Technologies Research Center), IIIT Hyderabad",
+    "start": "Jul 2025",
+    "end": "present",
+    "position": "Research Scholar",
+    "description": "- Research in Speech and Language Technology with a focus on Indic languages and foundational models.\n- Exploring theoretical and applied aspects of language understanding, generation, and synthesis."
+  },
+  {
+    "company": "AI4Bhārat, IIT Madras",
+    "start": "Jul 2024",
+    "end": "Jun 2025",
+    "position": "Researcher (Speech Synthesis)",
+    "description": "- Proposed and leading **SwaraTTS**, a TTS model for Sanskrit Sloka Chanting under Prof. Mitesh Khapra."
+  },
+  {
+    "company": "AI4Bhārat, IIT Madras",
+    "start": "Jul 2023",
+    "end": "Jun 2025",
+    "position": "Language Expert (ASR + TTS)",
+    "description": "- Superchecker for ASR and YouTube Speech Datasets funded by **Bhashini (Digital India Mission by MeitY)** – Review, Quality Check, Standardization, Guideline Formalization.\n- Telugu Language Expert for TTS data recording – **Rasa Dataset Collection**."
+  },
+  {
+    "company": "Kautilya Education",
+    "start": "Jun 2022",
+    "end": "May 2023",
+    "position": "Product Developer",
+    "description": "- Building and managing products & applications for Kautilya Education."
+  },
+  {
+    "company": "Kautilya Education",
+    "start": "Oct 2021",
+    "end": "Jun 2022",
+    "position": "Full Stack Developer",
+    "description": "- Building and managing applications for Kautilya Education."
+  }
+]
