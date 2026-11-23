@@ -1,93 +1,100 @@
-# imradhe.com (GraphenePHP, container build)
+# imradhe.com · MERN
 
-The old imradhe.com code, packaged for Dokploy and with the `/blog` routes added.
-`src/` is the site, `media/ar/` holds the 350 MB AR models (kept apart so Docker caches that layer).
+A React application backed by an Express API and MongoDB. Node serves the production client, public files, and AR media on port 8080. PHP, Apache, and MySQL are no longer runtime dependencies.
 
-## What changed from the old code
+The portfolio content, photographs, resume, project images, chat archive, audio and 3D models are retained. The original application is preserved on branch `main`; this implementation is on `mern-rewrite`.
 
-| File | Change |
-|---|---|
-| `src/.htaccess` | `index.php?/$1` became `index.php [QSA,L]`, as in the latest GraphenePHP. The old rule dropped the query string and turned `QUERY_STRING` into the path, so `?page=2` never reached PHP. Also redirects `/aibro` and `/adcast` to their subdomains, as the live site does. |
-| `src/router.php` | Same matching order and behaviour as before, plus: literal parts of a route are regex-quoted (`.` is no longer a wildcard), a missing query string no longer raises a notice, `/blog/` redirects to `/blog` and keeps `?query`, a route whose view file is missing returns 404 instead of a blank page. |
-| `src/routes.json` | Added `blog`, `blog/{slug}` and `health`. |
-| `src/controllers/BlogController.php`, `src/views/blog/*` | The blog. Posts are Markdown files in `src/content/blog/`. |
-| `src/views/partials/head.php` | A page can set `$pageTitle` and `$pageDescription`. |
-| `src/config.php` | Reads secrets and host settings from environment variables instead of holding them. |
+## Run with Docker
 
-## Writing a post
+From this directory:
 
-Add `src/content/blog/<slug>.md` (slug: `a-z`, `0-9`, `-`), see `src/content/blog/_example.md`:
-
-```
----
-title: My post
-date: 2026-11-23
-description: One line for the index and search results.
-tags: speech, nlp
----
-Markdown here.
+```sh
+docker compose up --build -d
+docker compose exec web npm run seed
 ```
 
-`draft: true` hides a post; files starting with `_` are ignored. Commit and redeploy to publish.
+Open http://localhost:8080. MongoDB has a persistent named volume and is reachable only on the Compose network. The web port binds to loopback for local use. `docker compose down` stops services and keeps your database volume.
 
-## Test
+The first seed adds the three original stories and three scenes from `data/legacy-content.json`, derived from the supplied live-site export `db/imradhe.sql`. It does **not** import the unrelated Kautilya database. It also imports valid Markdown filenames from `content/blog/`; `_example.md` is a hidden template. Re-running seed inserts missing records and preserves existing edits. There are no published blog posts in the supplied source.
 
-```bash
-make test      # lint, build the image, smoke-test it over HTTP, then again against a MariaDB loaded with db/ (needs Docker)
+## Local development
+
+Use Node **22.17 or newer** and a running MongoDB server (MongoDB 7 or 8).
+
+```sh
+npm ci
+cp .env.example .env
+# Set MONGODB_URI to your local MongoDB or Atlas database.
+npm run seed
+npm run dev
 ```
 
-## Database
+Open http://localhost:5173. Vite proxies API and media requests to Express on port 8080. All database access and secrets stay on the server. To use the production client locally:
 
-`db/imradhe.sql` is the export of the live site's database, `u881909133_imradhe` on Hostinger: tables `stories` (3) and
-`scenes` (3: `short-stories-1-1-1`, `short-stories-1-2-1`, `streaktracker-1-1-1`), MariaDB 11.8 dump. Do not confuse it with
-`u881909133_kautilyaedu`, an unrelated database of another project that also has `scenes` and `stories` tables with test data.
-The dump creates tables only (no `DROP`), so it loads into an empty database as is. It is not part of the image.
-`make smoke-db` imports it into a throwaway MariaDB and checks the scene and admin pages.
-
-On Dokploy: create a **MySQL** (or MariaDB) service in the project, create the app database and user, then load the file
-from the service's **Terminal** (the shell has `MYSQL_USER`, `MYSQL_PASSWORD` and `MYSQL_DATABASE`). To **replace** the
-stories and scenes in a database that already has them (this leaves `users` and `logs` alone), back up first and drop the two tables:
-
-```bash
-mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --no-tablespaces "$MYSQL_DATABASE" scenes stories > /tmp/backup.sql
-( echo "SET FOREIGN_KEY_CHECKS=0; DROP TABLE IF EXISTS scenes, stories;"; cat imradhe.sql; echo "SET FOREIGN_KEY_CHECKS=1;" ) \
-  | mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"
+```sh
+npm run build
+npm start
 ```
 
-Point the app at the database with the `DB_*` variables below, using the service's internal host name.
+Then open http://localhost:8080. Building does not require MongoDB. The portfolio, static files and `/health` remain available without a database; database routes respond with 503 until MongoDB is ready.
 
-### Login and admin
+## Administrator account
 
-The stories export has no `users` or `logs` tables, which `/login`, `/register` and `/admin` need. `db/auth.sql` creates them
-(schema only, safe to run twice; `make smoke-db` runs it). Import it the same way as the dump. It deliberately creates
-no user: the example user in `src/models/auth/logs.sql` has a guessable password, so do not use that file.
+1. Register at `/register`, using a password of at least 12 characters. Public registration always creates an ordinary user.
+2. Promote the existing account from the application directory:
 
-1. Open `/register` and create your account with your own password. New accounts get the role `user`.
-2. Promote it in the database service's Terminal (the shell has `MYSQL_USER`, `MYSQL_PASSWORD` and `MYSQL_DATABASE`):
-
-   ```bash
-   mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e "update users set role='admin' where email='you@example.com'"
+   ```sh
+   npm run admin -- you@example.com
+   # For Compose:
+   docker compose exec web npm run admin -- you@example.com
    ```
 
-3. Log in at `/login`; `/admin` now opens. Once your account exists, consider removing `/register` from
-   `src/routes.json`, because anyone can create a `user` account.
+3. Log in at `/login` and open `/admin`. You can create, edit, and delete stories, scenes, and Markdown blog posts, review flags, and inspect recent login records.
 
-Admin pages: `/admin` (home), `/admin/stories` and `/admin/scenes` with New, Edit and Delete. Delete is a plain link
-(a GET request) that is limited to admins but has no CSRF token, so only use it while logged in to your own site.
+Set `ALLOW_REGISTRATION=false` after creating the accounts you need. No default admin or password is included. The original export contains no user records; old MD5 hashes are intentionally not imported.
 
-Passwords are stored as unsalted MD5, which is how the framework was written; treat the admin password as low assurance.
+Sessions are stored in MongoDB with expiration and an HttpOnly, SameSite=Strict cookie. Passwords use salted scrypt hashes. State-changing authenticated requests require the session’s CSRF token. New sessions rotate the browser’s previous token. Deletes require an explicit UI confirmation and a DELETE request; deleting a story that still has scenes returns 409.
 
-## Deploy on Dokploy
+## Content
 
-Application, build type **Dockerfile**, **Build Path** = the folder holding this `Dockerfile`, **Container Port 8080**,
-health check URL `/health`.
+- `data/portfolio.json`: education, experience, and all 15 project entries; changes take effect after server restart.
+- `/admin/posts`: author posts in Markdown, set descriptions and tags, and toggle draft visibility.
+- `content/blog/*.md`: optional import source for new posts. Run `npm run seed` to insert new slugs; edit existing posts through admin.
+- `/admin/stories` and `/admin/scenes`: manage story content. Scene IDs are generated as `<storyID>-<act>-<chapter>-<scene>`. Changing these numbers changes the scene URL.
+- Scene HTML and rendered blog HTML are sanitized. The browser renders portfolio and archive Markdown without raw HTML.
+- `public/assets/`: preserved media and public resources. `media/ar/` contains the large models and is served at `/assets/ar/` without copying them into the Vite bundle.
 
-Environment variables:
+## Environment
 
-| Variable | Needed for |
-|---|---|
-| `APP_URL` | **Required.** Public address with trailing slash, e.g. `https://imradhe.com/`. Used for links, assets and redirects. |
-| `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | `/scene/{slug}`, `/login`, `/register`, `/admin/*` and `/api/*`, which use MySQL. Without them those routes return 500; every other page works. Use a dedicated user, not the admin user. |
-| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION` | `/testmail` only. |
+| Variable | Default / purpose |
+| --- | --- |
+| `PORT` | `8080` |
+| `APP_URL` | `http://localhost:8080`; public origin used for canonical links and mutation origin checks |
+| `MONGODB_URI` | `mongodb://127.0.0.1:27017/imradhe` |
+| `NODE_ENV` | Use `production` behind HTTPS to enable secure cookies and HTTPS CSP behavior |
+| `TRUST_PROXY` | `0`; use `1` only when the application is reachable through exactly one trusted reverse proxy |
+| `ALLOW_REGISTRATION` | `true`; set `false` to close registration |
+| `ASR_URL` | Optional AI4Bharat-compatible ASR HTTP inference endpoint |
+| `ASR_TOKEN` | Optional bearer token, sent only to that configured endpoint |
 
-Left out of the image: `ar-old/` (403 on the live site), `aibro/` and `adcast/` (already served from their own subdomains), and zip archives.
+The speech-to-text page sends WAV/MP3 audio through `/api/transcribe`. It validates language, size and format, detects the audio’s sample rate, and forwards audio only when submitted. With no configured service it returns an explicit 503 instead of pretending transcription worked. The speech-synthesis demo at `/balloon` uses the browser’s voices and no embedded bearer credential.
+
+AR model viewing works on desktop; native AR needs a compatible phone and HTTPS. The isolated marker-video demo loads A-Frame and AR.js from their pinned upstream versions and requires camera permission. Camera/native AR and the external ASR provider need testing on their target devices/services.
+
+## Deploy on Dokploy or another Docker host
+
+Use `app/Dockerfile` with build context `app/`, container port **8080**, and liveness check `/health`. Provide a private MongoDB service or an Atlas URI, `APP_URL=https://imradhe.com`, `NODE_ENV=production`, and the appropriate `TRUST_PROXY` value. The container runs as the unprivileged `node` user.
+
+Run `npm run seed` once in the deployed container’s terminal. Register/promote your admin, then close registration if desired. MongoDB indexes, including unique identifiers and session expiration, are created before the API reports readiness. `/api/health` is the database readiness check (200 when ready, 503 otherwise).
+
+A production deployment needs both the Node container and a persistent MongoDB service. Do not reuse the old PHP/MySQL build settings. Compose defaults to local HTTP development; set production values when adapting it for an HTTPS reverse proxy.
+
+## Verify
+
+```sh
+npm run check  # production build, API/content tests against temporary MongoDB, React interaction tests
+```
+
+The integration suite starts and stops its own isolated MongoDB process; it never connects to `MONGODB_URI` or a real user database. The first test run may download the MongoDB test binary to `/tmp/imradhe-mongodb-binaries`. Tests cover content migration, role/CSRF enforcement, sessions, CRUD, drafts, HTML sanitization, flag ownership/aggregates, HTTP status and redirect behavior, static-file isolation, outage handling, chess moves, streak rewards, and subtitle timestamps.
+
+See [`../docs/MIGRATION.md`](../docs/MIGRATION.md) for all legacy routes and compatibility changes.

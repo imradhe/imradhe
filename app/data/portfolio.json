@@ -1,0 +1,257 @@
+{
+  "education": [
+    {
+      "institution": "International Institute of Information Technology, Hyderabad",
+      "degree": "PhD in Computational Linguistics",
+      "start": "Jul 2025",
+      "end": "Present",
+      "description": "- Research in Speech and Language Technology with a focus on Indic languages and foundational models.\n- Exploring theoretical and applied aspects of language understanding, generation, and synthesis."
+    },
+    {
+      "institution": "Indian Institute of Technology, Madras",
+      "degree": "CS6370: Natural Language Processing by Prof. Sutanu Chakraborti",
+      "start": "Jan 2024",
+      "end": "May 2024",
+      "description": ""
+    },
+    {
+      "institution": "SCSVMV (Kanchi University)",
+      "degree": "B.Tech in Information Technology",
+      "start": "2019",
+      "end": "2023",
+      "description": "Graduated with strong focus on programming, software development, and product development."
+    }
+  ],
+  "experience": [
+    {
+      "company": "LTRC (Language Technologies Research Center), IIIT Hyderabad",
+      "start": "Jul 2025",
+      "end": "present",
+      "position": "Research Scholar",
+      "description": "- Research in Speech and Language Technology with a focus on Indic languages and foundational models.\n- Exploring theoretical and applied aspects of language understanding, generation, and synthesis."
+    },
+    {
+      "company": "AI4Bhārat, IIT Madras",
+      "start": "Jul 2024",
+      "end": "Jun 2025",
+      "position": "Researcher (Speech Synthesis)",
+      "description": "- Proposed and leading **SwaraTTS**, a TTS model for Sanskrit Sloka Chanting under Prof. Mitesh Khapra."
+    },
+    {
+      "company": "AI4Bhārat, IIT Madras",
+      "start": "Jul 2023",
+      "end": "Jun 2025",
+      "position": "Language Expert (ASR + TTS)",
+      "description": "- Superchecker for ASR and YouTube Speech Datasets funded by **Bhashini (Digital India Mission by MeitY)** – Review, Quality Check, Standardization, Guideline Formalization.\n- Telugu Language Expert for TTS data recording – **Rasa Dataset Collection**."
+    },
+    {
+      "company": "Kautilya Education",
+      "start": "Jun 2022",
+      "end": "May 2023",
+      "position": "Product Developer",
+      "description": "- Building and managing products & applications for Kautilya Education."
+    },
+    {
+      "company": "Kautilya Education",
+      "start": "Oct 2021",
+      "end": "Jun 2022",
+      "position": "Full Stack Developer",
+      "description": "- Building and managing applications for Kautilya Education."
+    }
+  ],
+  "projects": [
+    {
+      "title": "Bolo",
+      "description": "An audio recording interface for speech data collection.",
+      "imageUrl": "assets/img/bolo.png",
+      "links": {
+        "Website": "https://bolo.openbhasha.org"
+      },
+      "tags": [
+        "Products/Applications",
+        "Language Tech",
+        "Tools"
+      ]
+    },
+    {
+      "title": "Chandasahita Ramayanam",
+      "description": "Sloka Viewer for all 19,700 ślokas of the Vālmīki Rāmāyaṇa by chandas (meter).",
+      "imageUrl": "assets/img/chandas.png",
+      "links": {
+        "Website": "https://chandas.netlify.app"
+      },
+      "tags": [
+        "Products/Applications",
+        "Language Tech",
+        "Cultural Preservation",
+        "Sanskrit"
+      ]
+    },
+    {
+      "title": "Laya",
+      "description": "An Audio-Text Alignment and annotation tool for Sanskrit Slokas speech data annotation.",
+      "imageUrl": "assets/img/laya.png",
+      "links": {
+        "Demo": "https://imradhe.github.io/laya",
+        "GitHub": "https://github.com/imradhe/laya"
+      },
+      "tags": [
+        "Products/Applications",
+        "Language Tech",
+        "Cultural Preservation",
+        "Tools"
+      ]
+    },
+    {
+      "title": "Smruthi",
+      "description": "An interactive reading platform for Ramayana & Bhagavad Gita.",
+      "imageUrl": "assets/img/smruthi.png",
+      "links": {
+        "Website": "https://demo.smruthi.in"
+      },
+      "tags": [
+        "Products/Applications",
+        "Language Tech",
+        "Cultural Preservation",
+        "Sanskrit"
+      ]
+    },
+    {
+      "title": "eSubhalekha.com (Startup)",
+      "description": "An experiment to learn business by building end-to-end pre-event digital experience platform for Telugu weddings, focusing on wedding websites and guest management tools.",
+      "imageUrl": "https://esubhalekha.com/assets/img/banner.png",
+      "links": {
+        "Website": "https://esubhalekha.com"
+      },
+      "tags": [
+        "Products/Applications",
+        "Event Tech",
+        "Startups"
+      ]
+    },
+    {
+      "title": "LocalJS",
+      "description": "LocalJS is a lightweight JavaScript library for easy localization of HTML elements. It allows you to replace specific words or phrases with translations based on the selected language.",
+      "imageUrl": "assets/img/localjs.png",
+      "links": {
+        "npm": "https://npmjs.com/package/@localjs/localjs",
+        "GitHub": "https://github.com/localjs/localjs"
+      },
+      "tags": [
+        "Libraries/Packages",
+        "Language Tech",
+        "Tools"
+      ]
+    },
+    {
+      "title": "Echo DB",
+      "description": "An Integrated Music Search Engine to search for songs you like and get the links to that song on any platform you love.",
+      "imageUrl": "assets/img/echodb.png",
+      "links": {
+        "Website": "https://echodb-react.netlify.app"
+      },
+      "tags": [
+        "Products/Applications",
+        "Music Tech"
+      ]
+    },
+    {
+      "title": "GraphenePHP",
+      "description": "A simple & lightweight PHP MVC framework.",
+      "imageUrl": "assets/img/graphenephp.png",
+      "links": {
+        "Website": "https://graphenephp.com",
+        "GitHub": "https://github.com/imradhe/GraphenePHP"
+      },
+      "tags": [
+        "Frameworks",
+        "Products/Applications"
+      ]
+    },
+    {
+      "title": "Project Ramayanam",
+      "description": "An initiative to transcribe and digitize the original text of Valmiki Ramayanam.",
+      "imageUrl": "assets/img/ramayanam.png",
+      "links": {
+        "GitHub": "https://github.com/imradhe/ramayanam-api"
+      },
+      "tags": [
+        "Language Tech",
+        "Cultural Preservation",
+        "Sanskrit"
+      ]
+    },
+    {
+      "title": "SCSVMV Music (Club)",
+      "description": "Established and led our college music club during my UG at SCSVMV.",
+      "imageUrl": "assets/img/scsvmvmusic.png",
+      "links": {
+        "Instagram": "https://instagram.com/scsvmv.music"
+      },
+      "tags": [
+        "Music"
+      ]
+    },
+    {
+      "title": "Being Human (Artist)",
+      "description": "My Independent Artist journey producing, singing/songwriting and distributing originals and cover songs on various platforms.",
+      "imageUrl": "assets/img/beinghumanmusic.png",
+      "links": {
+        "Website": "https://li.sten.to/BeingHuman",
+        "Spotify": "https://li.sten.to/BeingHuman/Spotify"
+      },
+      "tags": [
+        "Music"
+      ]
+    },
+    {
+      "title": "AI Bro Chat",
+      "description": "AI Chat Assistant for Career Guidance and College Counseling.",
+      "imageUrl": "assets/img/aibro.png",
+      "links": {
+        "Website": "https://aibro.kautilyaeducation.com"
+      },
+      "tags": [
+        "AI",
+        "EdTech",
+        "Products/Applications"
+      ]
+    },
+    {
+      "title": "StreakTracker",
+      "description": "Streak & Reward Tracking App for Productivity.",
+      "imageUrl": "assets/img/streaktracker.png",
+      "links": {
+        "Website": "https://streaktracker.netlify.app"
+      },
+      "tags": [
+        "Products/Applications",
+        "Tools"
+      ]
+    },
+    {
+      "title": "CV Raman Inspire",
+      "description": "An Event Management System for Inspire 2023 organized by Swamy Vivekananda Yuvajana Samiti on National Science Day.",
+      "imageUrl": "assets/img/inspire.png",
+      "links": {
+        "Website": "https://inspire.yuvajanasamiti.org"
+      },
+      "tags": [
+        "Event Tech",
+        "EdTech",
+        "Products/Applications"
+      ]
+    },
+    {
+      "title": "Dark Sparrows",
+      "description": "A community-based website to collaborate and create.",
+      "imageUrl": "assets/img/thedarksparrows.png",
+      "links": {
+        "Website": "https://darksparrows.kautilyaeducation.com"
+      },
+      "tags": [
+        "Products/Applications"
+      ]
+    }
+  ]
+}

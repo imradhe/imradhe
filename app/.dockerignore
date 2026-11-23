@@ -1,5 +1,9 @@
-.DS_Store
-**/.DS_Store
+node_modules
+dist
+.env
+.git
+coverage
 tests
-Makefile
+client/src/**/*.test.*
+server/tests
 db
