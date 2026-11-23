@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { Fragment, createContext, useContext, useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { api, setCsrf } from './api';
 const AuthContext = createContext(null);
@@ -17,5 +17,6 @@ export function AdminOnly({ children }) {
   if (loading) return null;
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
   if (user.role !== 'admin') return <div className="notice" role="alert">Administrator access required. Ask the site owner to enable your account.</div>;
-  return children;
+  // Remount the screen when the path changes (e.g. editing one record and then another), so editors never keep the previous record's fields.
+  return <Fragment key={location.pathname}>{children}</Fragment>;
 }
