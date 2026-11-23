@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Streak, { practice } from './Streak';
-import { AuthForm } from './Auth';
+import { AuthForm, afterLoginPath } from './Auth';
 import { api } from '../api';
 import { srtTime, toSrt } from './Dhwani';
 vi.mock('../auth', () => ({ useAuth: () => ({ user: null, accept: vi.fn() }) }));
@@ -49,6 +49,26 @@ describe('original account form', () => {
     await waitFor(() => expect(api).toHaveBeenCalledWith('/auth/register', { method: 'POST', body: { name: 'Original User', email: 'original@example.test', phone: '9876543210', password: 'Original-123!' } }));
   });
 });
+describe('post-login redirect', () => {
+  it('sends admins to /admin and everyone else home when there is no next parameter', () => {
+    expect(afterLoginPath(null, 'admin')).toBe('/admin');
+    expect(afterLoginPath(null, 'user')).toBe('/');
+    expect(afterLoginPath(undefined, undefined)).toBe('/');
+    expect(afterLoginPath('', 'admin')).toBe('/admin');
+  });
+  it('honours a safe next path for every role', () => {
+    expect(afterLoginPath('/admin/stories', 'admin')).toBe('/admin/stories');
+    expect(afterLoginPath('/blog/hello', 'user')).toBe('/blog/hello');
+    expect(afterLoginPath('/', 'admin')).toBe('/');
+  });
+  it('ignores off-site or malformed next values', () => {
+    for (const bad of ['//evil.example', 'https://evil.example', '/\\evil.example', 'admin', 'javascript:alert(1)']) {
+      expect(afterLoginPath(bad, 'user')).toBe('/');
+      expect(afterLoginPath(bad, 'admin')).toBe('/admin');
+    }
+  });
+});
+
 describe('subtitle export', () => {
   it('formats millisecond boundaries and exports each line with its own timestamp', () => {
     expect(srtTime(59.9996)).toBe('00:01:00,000');

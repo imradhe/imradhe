@@ -5,13 +5,18 @@ import { api } from '../api';
 import useOriginalPage from '../original/useOriginalPage';
 import loginCss from '../original/styles/login.css?raw';
 import registerCss from '../original/styles/register.css?raw';
+// Where to go after signing in: a safe same-site ?next= path wins; with none, admins land on
+// /admin and everyone else on the home page. Rejects //host and backslash tricks (open redirect).
+export function afterLoginPath(rawNext, role) {
+  const safe = typeof rawNext === 'string' && /^\/(?!\/)/.test(rawNext) && !rawNext.includes('\\') ? rawNext : null;
+  return safe || (role === 'admin' ? '/admin' : '/');
+}
 export function AuthForm({ register = false }) {
   const { user, accept } = useAuth(); const navigate = useNavigate(); const [params] = useSearchParams();
   const [error, setError] = useState(''); const [busy, setBusy] = useState(false); const [showPassword, setShowPassword] = useState(false);
   const [values, setValues] = useState({ name: '', email: '', phone: '', password: '' }); const [touched, setTouched] = useState({});
   useOriginalPage({ css: register ? registerCss : loginCss, bodyClass: 'text-center', title: register ? 'User Registration | GraphenePHP' : 'Login | GraphenePHP', cssBeforeStyles: register });
-  const rawNext = params.get('next') || '/'; const next = /^\/(?!\/)/.test(rawNext) && !rawNext.includes('\\') ? rawNext : '/';
-  if (user) return <Navigate to={next} replace/>;
+  if (user) return <Navigate to={afterLoginPath(params.get('next'), user.role)} replace/>;
   function validate(name, value) {
     if (name === 'name') return !value ? "Name can't be empty" : value.length <= 5 ? "Name can't be less than 6 Characters" : '';
     if (name === 'email') return !value.trim() ? "Email can't be empty" : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Email is invalid' : '';
@@ -25,7 +30,7 @@ export function AuthForm({ register = false }) {
   }
   async function submit(event) {
     event.preventDefault(); setBusy(true); setError('');
-    try { const data = await api(`/auth/${register ? 'register' : 'login'}`, { method: 'POST', body: values }); accept(data); navigate(next, { replace: true }); }
+    try { const data = await api(`/auth/${register ? 'register' : 'login'}`, { method: 'POST', body: values }); accept(data); navigate(afterLoginPath(params.get('next'), data.user?.role), { replace: true }); }
     catch (e) { setError(e.message); } finally { setBusy(false); }
   }
   function input(name, placeholder, type = name) {
