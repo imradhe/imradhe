@@ -302,7 +302,7 @@ export function createApp({ settings = config, dbRequired = true } = {}) {
     res.type('xml').send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.map(p => `<url><loc>${escape(new URL(p, settings.appUrl).href)}</loc></url>`).join('')}</urlset>`);
   });
   // Admin screens that exist in the client; anything else under /admin is a real 404.
-  const adminPage = /^\/admin(?:\/?$|\/(?:stories|scenes|posts)(?:\/(?:new|(?:edit|delete)\/[a-z0-9-]+))?$|\/entries\/(?:education|experience|project|publication)(?:\/new|\/edit\/[a-f0-9]{24})?$|\/profile$|\/pages\/(?:about|skills|interests)$)/;
+  const adminPage = /^\/admin(?:\/?$|\/(?:stories|scenes|posts)(?:\/(?:new|(?:edit|delete)\/[a-z0-9-]+))?$|\/entries\/(?:education|experience|project|publication)(?:\/new|\/edit\/[a-f0-9]{24})?$|\/profile$|\/documents$|\/pages\/(?:about|skills|interests)$)/;
   app.get('/{*path}', async (req, res) => {
     let title = 'Radhe Shyam Salopanthula';
     let description = 'PhD researcher in Computational Linguistics at IIIT Hyderabad. Speech, language technology, and research-driven products.';
